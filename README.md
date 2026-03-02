@@ -149,7 +149,7 @@ For the MVP, the knowledge base is instantiated with DOOH / MUPIS industry mater
 
 ## Tools & APIs
 
-- DuckDuckGo Search API → Company discovery & web intelligence
+- Tavily API → Company discovery & web intelligence
 - NewsAPI → Industry trends & updates
 - Yahoo Finance (`yfinance`) → Financial metrics
 - Pinecone → Vector database for contextual retrieval
