@@ -15,6 +15,22 @@ PARTTEAM & OEMKIOSKS.
 
 ---
 
+## Project Documents
+
+| Document | Purpose |
+|---|---|
+| **README.md** | Project overview, architecture, setup and deployment guide |
+| **architecture_decisions.md** | Every architectural decision, the reasoning behind it, and trade-offs made |
+| **project_summary.md** | Current build status, completed modules, and immediate next step |
+| **product_backlog.md** | Post-MVP improvements — categorised, layered, and effort-estimated |
+
+
+> Start with this file for project context and setup instructions.
+> To understand why the system was designed the way it was, read `architecture_decisions.md`.
+> To see what has been built and what is currently in progress, read `project_summary.md`.
+> To explore planned improvements and future capabilities, read `product_backlog.md`.
+
+
 ## What This System Does
 
 Most competitive intelligence tools generate generic company profiles.
