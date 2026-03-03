@@ -300,6 +300,94 @@ correctly at embed time. This adds a small amount of complexity to
 ingest.py but is straightforward to implement and significantly improves
 retrieval quality in production.
 
+## Decision 12 — MCP Integration: In-Process Tool Definitions
+
+**Options Considered:**
+1. Use existing remote MCP servers (Tavily has one, NewsAPI has community ones, TED has none)
+2. Build and deploy separate MCP server processes
+3. Define MCP tools in-process using the `mcp` library alongside the LangGraph agent
+
+**Why We Chose Option 3:**
+- TED API has no existing MCP server — building and deploying a separate process adds significant complexity for one tool
+- Separate MCP server processes require independent deployment, health monitoring, and inter-process communication — high risk for a 5-day build
+- In-process MCP tool definitions using `@mcp.tool()` decorator meet the project requirement, demonstrate understanding of the MCP pattern, and add zero deployment complexity
+- All three tools run inside the same Railway process as FastAPI and LangGraph — one deployment, one process
+
+**What This Means in Practice:**
+Each tool is a Python function decorated with `@mcp.tool()`. The decorator provides the standardised tool schema (name, description, input types) that LangGraph's ReAct agent uses for tool discovery and invocation. The tools are registered directly with the agent at startup — no network calls, no separate servers.
+
+**Trade-off:**
+Tools are not exposed as remote MCP endpoints that other agents or clients could call. This is acceptable for MVP — the MCP pattern is correctly implemented and demonstrable. Remote exposure is a post-MVP enhancement.
+
+---
+
+## Decision 13 — Error Handling: Built From the Start, Not Retrofitted
+
+**Decision:**
+Implement error handling in every module from the first line of code, not as a cleanup pass at the end.
+
+**Reasoning:**
+Retrofitting error handling is expensive and risky — it requires revisiting every function, understanding all failure modes after the fact, and risks introducing new bugs during refactoring. Building it from the start costs 10-15% more time per module but eliminates a full refactoring pass at the end.
+
+**What Can Fail and How We Handle It:**
+
+| Failure | Handler |
+|---|---|
+| OpenAI API authentication error | Log ERROR, return empty result, do not crash |
+| OpenAI rate limit hit | Log WARNING, return empty result, retry logic in agent |
+| OpenAI connection error | Log ERROR, return empty result |
+| Pinecone connection failure | Log CRITICAL, raise — system cannot function without RAG |
+| Pinecone query failure | Log ERROR, return empty result |
+| Pinecone returns 0 results | Log WARNING, return empty list |
+| Malformed metadata in Pinecone match | Log WARNING, skip that match, continue |
+| External API timeout (Tavily, NewsAPI) | Log WARNING, retry up to 3 times, then return empty |
+| LLM call failure | Log ERROR, surface uncertainty in output rather than crash |
+
+**Design Principle:**
+Retrieval failures return empty results — the agent continues with less context.
+Infrastructure failures (Pinecone unavailable) raise — the run cannot proceed meaningfully.
+The system always produces output, surfacing uncertainty when data is insufficient.
+
+**Trade-off:**
+More verbose code per module. Justified by reduced debugging time, better observability, and a system that degrades gracefully rather than crashing silently.
+
+---
+
+## Decision 14 — Logging: Centralised, Named, Daily Rotating Files
+
+**Decision:**
+Implement a single `core/logging_config.py` module imported by every other module. Never configure logging outside this file.
+
+**Implementation:**
+- Daily log files: `logs/YYYY-MM-DD.log`
+- File handler: DEBUG and above — full detail for debugging
+- Console handler: INFO and above — clean output during development
+- Named loggers via `get_logger(__name__)` — every entry identifies its source module
+- Third party loggers silenced at WARNING — only our code produces DEBUG entries
+
+**Log entry format:**
+```
+2026-03-03 16:01:51 | INFO     | rag.retriever | Retrieved 3 chunks — top score: 0.5853
+2026-03-03 16:01:52 | ERROR    | agent.tools.tavily | Tavily timeout — retrying (1/3)
+2026-03-03 16:01:53 | CRITICAL | agent.graph | Run aborted — Pinecone unavailable
+```
+
+**Why From the Start:**
+Logging added after the fact means the first bugs you encounter during development have no log trail. Every hour spent debugging without logs costs more than the time invested in setting up logging upfront. The log file becomes the primary debugging tool — not print statements, not re-running code.
+
+**Trade-off:**
+Small overhead per module (two lines: import + logger instantiation). The payoff is complete observability from the first test run.
+
+**New project structure additions:**
+```
+strategic_radar/
+├── core/
+│   ├── __init__.py
+│   └── logging_config.py
+├── logs/
+│   └── YYYY-MM-DD.log    ← gitignored
+```
+
 ## Trade-offs Summary
 
 | Trade-off | Decision | Rationale |
@@ -312,6 +400,9 @@ retrieval quality in production.
 | Cloud deployment over local script | FastAPI + Railway | Real product, not just a demo |
 | Single source of truth over format purity | Competitor registry as JSON, reconstructed as text for RAG | Application logic and RAG ingestion served from one file |
 | Semantic chunking over token-based chunking | Chunk by ## heading, fatten thin chunks | Retrieval precision over implementation simplicity |
+| In-process MCP over separate MCP servers | @mcp.tool() decorator, same Railway process | Zero deployment risk over full MCP remote exposure |
+| Error handling from the start over retrofitting | Built into every module from line one | 10-15% more time per module, eliminates full refactor pass |
+| Centralised logging over per-module configuration | core/logging_config.py, imported everywhere | Two lines per module, complete observability from first run |
 
 ---
 
