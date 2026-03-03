@@ -1,223 +1,336 @@
-# Autonomous Competitive Intelligence Agent  
-### Evidence-Driven Agent Architecture for Reliable Market Research
+# Autonomous Strategic Intelligence Snapshot Engine
+### Bounded Signal Evaluation for Competitive Decision-Making
+### Built for the DOOH & Self-Service Kiosk Industry
+
+## Important Note
+
+PARTTEAM & OEMKIOSKS is used as a case study for demonstration purposes only.
+All information was sourced from publicly available sources. This project has
+no affiliation with or endorsement from PARTTEAM & OEMKIOSKS.
+
+The strategic objectives defined in `rag/kb/strategic_direction.md` are
+invented but plausible — they are informed by publicly available information
+about the company but do not represent the actual strategic priorities of
+PARTTEAM & OEMKIOSKS.
 
 ---
 
-## Executive Overview
+## What This System Does
 
-Organizations increasingly rely on AI agents for research and competitive intelligence. However, most implementations lack structural validation, bounded autonomy, and observability — leading to hallucinations, unreliable outputs, and opaque decision-making.
+Most competitive intelligence tools generate generic company profiles.
+This system does something different.
 
-This project implements a modular, evidence-driven autonomous research agent designed to generate structured competitive intelligence reports.  
+Given a competitor name and a time window, it autonomously finds recent market signals, evaluates each one against your company's specific business identity and strategic objectives, and produces a 1-page executive snapshot answering one question:
 
-The MVP is instantiated in the **Digital Out-of-Home (DOOH)** ecosystem (MUPIS, Digital Signage, Self-Service Kiosks), while the architecture remains industry-agnostic and reusable.
+**"Does this signal matter to us — and why?"**
 
-The objective is not merely automation — but **reliable autonomy**.
-
-The system integrates:
-
-- ReAct reasoning for intelligent tool selection  
-- LangGraph for stateful workflow orchestration  
-- Pinecone RAG for contextual industry grounding  
-- MCP-based API integration (Search, News, Financial data)  
-- N8N for operational deployment and automated delivery  
-
-The result is an end-to-end autonomous workflow capable of producing structured business intelligence reports with transparent confidence indicators and bounded retry logic.
+The output is not a report. It is a bounded, actionable intelligence brief.
 
 ---
 
-## Why This Architecture Matters
+## MVP Roadmap — Layered Delivery Strategy
 
-Most AI agents fail in production due to:
+Each version is a fully working, demoable product.
+Development is additive — each layer builds on the previous one.
+If time runs out, fall back to the previous version. It still works.
 
-- Lack of validation before synthesis  
-- Over-reliance on LLM judgment  
-- Hidden reasoning steps  
-- Unbounded loops  
-- Poor observability  
+**MVP V1.0 — Competitor Intelligence** ← Build first
+Monitor competitor moves. Evaluate strategic relevance. Deliver executive snapshot.
+- Tools: Tavily + NewsAPI
+- Input: competitor name + time window
+- Output: 1-page ranked signal brief
 
-This system addresses those issues through:
+**MVP V1.1 — + Business Opportunities** ← Add second
+Monitor EU public tenders aligned with strategic objectives.
+- Adds: TED API (EU public procurement)
+- Adds: Business Opportunities branch in LangGraph
+- Everything from V1.0 remains unchanged
 
-- Structural evidence coverage rules before analysis  
-- Deterministic workflow routing  
-- Bounded retry mechanisms (max 1 improvement pass per section)  
-- Explicit state schema  
-- Execution logging for traceability  
-- Confidence scoring and data gap reporting  
+**MVP V1.2 — + Technology Developments** ← Add third
+Monitor emerging technologies relevant to DOOH and kiosk ecosystem.
+- Adds: Technology Developments branch in LangGraph
+- Adds: Technology Watchlist to Knowledge Base
+- Everything from V1.1 remains unchanged
 
-The architecture separates cognition, control, and orchestration to ensure clarity and extensibility.
+**Fallback rule:**
+V1.2 not finished → demo V1.1
+V1.1 not finished → demo V1.0
+V1.0 is the minimum deliverable. It ships no matter what.
+
+---
+
+## Industry Focus
+
+The MVP is instantiated for the **DOOH and Self-Service Kiosk ecosystem**:
+- MUPIS (Municipal Urban Passenger Information Systems)
+- Digital Signage
+- Self-Service Kiosks (airports, QSR, retail, smart cities)
+
+The architecture is industry-agnostic and reusable across verticals.
 
 ---
 
 ## System Architecture
 
-### Layered Design
+### Layer Model
+```
+N8N Cloud          →  Operational orchestration & delivery
+FastAPI + Railway  →  HTTP interface & entry point
+Gradio UI          →  Human-facing interface for manual runs & demos
+LangGraph          →  Cognitive workflow controller
+ReAct Agent        →  Signal discovery & research loop
+Pinecone RAG       →  Strategic identity & objectives grounding
+External APIs      →  Live signal data
+LLM                →  Strategic evaluation & brief generation
+```
 
-**Cognition Layer**  
-ReAct Research Agent — performs reasoning and tool selection.
+### Design Principles
 
-**Control Layer**  
-LangGraph workflow — manages state, routing, retries, and transitions.
-
-**Knowledge Layer**  
-Pinecone RAG — stores structured industry archetypes.
-
-**Data Layer**  
-External APIs (Search, News, Financial data).
-
-**Orchestration Layer**  
-N8N workflow — triggers execution and delivers final report via email.
-
-Only the research phase uses dynamic reasoning.  
-All subsequent phases (analysis, reporting, delivery) are deterministic and structured.
-
----
-
-## Workflow Overview
-
-1. Input received (company + research objective)
-2. Research plan generated (visible planning step)
-3. ReAct loop performs multi-source research
-4. Structural coverage validation applied
-5. Single-pass quality evaluation
-6. Optional bounded retry (max 1 per section)
-7. Structured report generation
-8. Email delivery via N8N
-
-The system always produces output while surfacing uncertainty when data quality is insufficient.
+- Cognition, control, and orchestration are strictly separated
+- Only the research phase uses dynamic reasoning (ReAct)
+- All subsequent phases are deterministic and structured
+- Autonomy is bounded — max 7 LLM calls per run (V1.0)
+- The system always produces output, surfacing uncertainty when data is insufficient
+- Every decision is logged for observability and debugging
 
 ---
 
-## Input Schema
+## Workflow — MVP V1.0 (Competitor Moves)
+```
+START
+  → Input Validation        (deterministic — competitor registry check)
+  → Query Builder           (deterministic — no LLM)
+  → API Signal Collection   (Tavily + NewsAPI, filtered by time window)
+  → Strategic Selection     (LLM — selects top 5 signals from raw results)
+  → Per-Signal Evaluation   (LLM + RAG — max 5 calls, one per signal)
+  → Executive Brief         (LLM — single call, ranked by impact)
+  → Return to N8N
+END
+```
 
+## Workflow — MVP V1.1 (+ Business Opportunities)
+```
+START
+  → Input Validation
+  → Route by intelligence_type
+      → Competitor Moves    (V1.0 workflow)
+      → Business Opps       (TED API → tender matching → opportunity brief)
+  → Return to N8N
+END
+```
+
+## Workflow — MVP V1.2 (+ Technology Developments)
+```
+START
+  → Input Validation
+  → Route by intelligence_type
+      → Competitor Moves       (V1.0 workflow)
+      → Business Opps          (V1.1 workflow)
+      → Technology Developments (signal collection → tech watchlist matching → tech brief)
+  → Return to N8N
+END
+```
+
+### LLM Call Budget (Per Run — V1.0)
+
+| Step | Calls |
+|---|---|
+| Strategic selection | 1 |
+| Per-signal evaluation | max 5 |
+| Executive brief generation | 1 |
+| **Total** | **max 7** |
+
+---
+
+## User Input
 ```json
 {
-  "company": "string",
-  "research_objective": "string",
-  "include_opportunities": true
+  "company": "JCDecaux",
+  "intelligence_type": "Competitor Moves",
+  "time_range_days": 7
 }
 ```
 
-## State & Observability
-
-The system uses an explicit shared state model to ensure transparency and maintainability.
-
-### Core State Elements
-
-- `research_plan`
-- `evidence` (categorized by section)
-- `coverage_validation_flags`
-- `quality_scores`
-- `analysis`
-- `report_text`
-- `execution_log`
-- `retry_counter`
-- `needs_human_review`
-- `errors`
-
-Each workflow node owns a specific portion of the state to prevent side effects and debugging ambiguity.
+**Constraints:**
+- Company must exist in the competitor registry
+- One intelligence type per run
+- One competitor per run
+- Max 5 signals evaluated per run
 
 ---
 
-### Execution Log
+## Output
 
-The `execution_log` acts as a trace layer, recording:
+A 1-page executive strategic snapshot:
+```
+Strategic Snapshot — JCDecaux (Last 7 Days)
 
-- Major decisions
-- Tool executions
-- Phase transitions
-- Errors
+High Impact
+...
 
-This improves debugging, transparency, and demo clarity.
+Medium Impact
+...
+
+Low Impact
+...
+
+Executive Takeaway
+3–4 concise sentences.
+```
+
+Delivered via email as PDF (automated) or displayed in Gradio UI (manual/demo).
 
 ---
 
-## Knowledge Base Design (Reusable Schema)
+## Knowledge Base (RAG) — Strategic Grounding Memory
 
-The RAG system is structured around reusable industry archetypes:
+The RAG system is not a generic industry overview.
+It is the company's strategic identity — used to evaluate whether a signal matters.
 
-- Industry Context
-- Business Models
-- Financial Patterns
-- Risk Patterns
-- Competitive Dynamics
+### Documents
 
-This allows the agent architecture to be reused across industries by replacing domain documents without modifying workflow logic.
+**1. Business Profile**
+- Core products and services
+- Target verticals
+- Revenue model
+- Geographic focus
+- Competitive positioning
 
-For the MVP, the knowledge base is instantiated with DOOH / MUPIS industry materials.
+**2. Strategic Direction**
+- 5–8 active strategic objectives
+- Used to assess signal relevance and impact
+
+**3. Competitor Registry**
+- Controlled list of monitored competitors
+- Prevents noise and scope creep
+
+**4. Technology Watchlist** ← Added in V1.2
+- Emerging technologies relevant to DOOH and kiosk ecosystem
+- e.g. programmatic DOOH platforms, AI-driven audience measurement,
+  touchless kiosk interfaces, computer vision for OOH analytics,
+  5G-connected signage, edge computing for kiosks
+- Used during Technology Developments evaluation
+
+### RAG is used only during signal evaluation.
+It answers: *"Given who we are and where we want to go, does this signal matter?"*
 
 ---
 
 ## Tools & APIs
 
-- Tavily API → Company discovery & web intelligence
-- NewsAPI → Industry trends & updates
-- Yahoo Finance (`yfinance`) → Financial metrics
-- Pinecone → Vector database for contextual retrieval
-- LangChain + LangGraph → Agentic workflow framework
-- N8N → Production-style orchestration & delivery
-
-Minimum three real-world APIs integrated as required by project constraints.
+| Tool | Purpose | Version |
+|---|---|---|
+| Tavily API | Web search — competitor signal discovery | V1.0 |
+| NewsAPI | News articles — competitor signal discovery | V1.0 |
+| TED API | EU public tenders — business opportunities | V1.1 |
+| Pinecone | Vector database — strategic grounding | All |
 
 ---
 
-## Report Structure
+## Entry Points
 
-Each generated report includes:
+**Gradio UI** (`/ui`)
+Human-facing interface. Competitor selected from dropdown (registry-controlled).
+Intelligence type selector. Time range selector (7 / 14 / 30 days).
+Displays snapshot in browser. Used for manual runs and demos.
 
-- Executive Summary
-- Company Overview
-- Industry Context
-- Competitive Landscape
-- Financial Highlights
-- Risks & Opportunities
-- Confidence & Data Gaps
-- How This Report Was Created
+**N8N Cloud**
+Automated orchestration. Webhook or scheduled trigger.
+Sends input to FastAPI, receives output, converts to PDF, delivers via email.
 
-The final section enhances transparency and demonstrates autonomous planning.
+Both entry points call the same FastAPI endpoint.
 
 ---
 
-## Strategic Design Decisions
+## Deployment
+```
+Your PC       →  VS Code + Git only
+GitHub        →  Code repository (auto-deploy trigger)
+Railway       →  FastAPI + LangGraph server (always-on)
+N8N Cloud     →  Workflow orchestration & email delivery
+Pinecone      →  Vector database (free tier)
+LLM           →  Anthropic Claude / OpenAI
+```
 
-- Structural validation precedes interpretation
-- Autonomy is bounded, not open-ended
-- Human-in-the-loop escalation path designed (future phase)
-- Architecture prioritizes extensibility over short-term complexity
-- Observability embedded from the start
-
----
-
-## Future Extensions
-
-- Industry-adaptive report templates
-- Reliability weighting per data source
-- Human review escalation workflow
-- Multi-company comparative analysis
-- Dashboard interface
+`git push` → Railway auto-deploys. Laptop can be closed.
 
 ---
 
-## Setup & Execution
+## What Is NOT in MVP
 
-1. Create virtual environment
-2. Install dependencies
-3. Configure `.env` with API keys
-4. Initialize Pinecone index
-5. Run standalone Python agent
-6. Trigger workflow via N8N
+- Multi-competitor runs
+- Scheduling and monitoring
+- Cross-signal correlation
+- Trend synthesis
+- Editable strategy via UI
+- Long analytical reports
+- Open-ended company input
 
-Detailed setup instructions available in `/docs`.
+All moved to post-MVP backlog.
 
 ---
 
-## Positioning
+## Project Structure
+```
+autonomous-strategic-intelligence/
+├── agent/
+│   ├── agent.py              ← Main entrypoint
+│   ├── graph.py              ← LangGraph workflow definition
+│   ├── nodes.py              ← Node implementations
+│   ├── state.py              ← TypedDict state schema
+│   └── tools/
+│       ├── tavily.py         ← Web search tool (V1.0)
+│       ├── newsapi.py        ← News search tool (V1.0)
+│       └── ted.py            ← EU tenders tool (V1.1)
+├── rag/
+│   ├── ingest.py             ← Document chunking & embedding
+│   ├── retriever.py          ← Pinecone vector search
+│   └── kb/
+│       ├── business_profile.md
+│       ├── strategic_direction.md
+│       ├── competitor_registry.json
+│       └── technology_watchlist.md  ← V1.2
+├── api/
+│   └── main.py               ← FastAPI server + Gradio mount
+├── n8n/
+│   └── workflow.json         ← Exported N8N workflow
+├── reports/                  ← Generated sample snapshots
+├── tests/                    ← API test scripts
+├── .env.example
+├── architecture_decisions.md ← Architecture decision log
+├── requirements.txt
+└── README.md
+```
 
-This project demonstrates:
+---
 
-- Agentic architecture design
-- Failure-mode awareness
-- Governance-aware AI implementation
-- Modular extensibility
-- Practical integration of RAG, ReAct, LangGraph, MCP, and N8N
+## Setup
 
-The focus is not on maximizing autonomy, but on designing reliable autonomous systems suitable for real-world deployment.
+1. Clone the repository
+2. Create virtual environment and install dependencies
+3. Configure `.env` with API keys (see `.env.example`)
+4. Initialize Pinecone index and ingest KB documents
+5. Run FastAPI server locally to test
+6. Push to GitHub — Railway auto-deploys
+7. Configure N8N Cloud workflow with Railway URL
+8. Open Gradio UI at `/ui` to run first snapshot
+
+---
+
+## Environment Variables
+```
+ANTHROPIC_API_KEY=
+PINECONE_API_KEY=
+PINECONE_INDEX=
+TAVILY_API_KEY=
+NEWS_API_KEY=
+```
+
+---
+
+## Learning Goals
+
+- Build a working MVP and validate with real industry feedback
+- Learn to scope and not overengineer — ship something that works over something that is perfect
+- Get hands-on exposure to LangGraph and N8N beyond the labs
+- Learn the full journey: from code running on a laptop to a live deployed product that others can actually use

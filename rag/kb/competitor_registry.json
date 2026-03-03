@@ -1,0 +1,76 @@
+{
+  "competitors": [
+    {
+      "id": "acrelec",
+      "name": "Acrelec",
+      "also_known_as": ["ACRELEC America"],
+      "headquarters": "Saint-Thibault-des-Vignes, France",
+      "website": "acrelec.com",
+      "primary_focus": "QSR self-ordering kiosks and drive-thru technology",
+      "key_verticals": ["QSR", "Retail"],
+      "geographic_presence": ["Europe", "North America", "South America"],
+      "ownership": "Owned by Glory Ltd",
+      "why_we_monitor": "Most dangerous competitor in the QSR vertical. Well-funded ($223M from Glory), global scale, and deep relationships with McDonald's and Burger King across Europe and North America. Directly overlaps with our YSnack software and NOMYU QSR hardware product line. Acrelec is already deploying AI-driven upsell and computer vision order accuracy at scale — capabilities that mid-size QSR chains may soon expect as standard. If Acrelec accelerates European mid-market penetration, it directly threatens our QSR growth objective. Any Acrelec product launch, partnership, or funding news is high priority."
+    },
+    {
+      "id": "pyramid-computer",
+      "name": "Pyramid Computer",
+      "also_known_as": ["Pyramid"],
+      "headquarters": "Freiburg, Germany",
+      "website": "pyramid-computer.com",
+      "primary_focus": "Custom interactive kiosks and industrial IT solutions",
+      "key_verticals": ["Retail", "Airport", "Public Services", "Gaming"],
+      "geographic_presence": ["Europe"],
+      "ownership": "Independent",
+      "why_we_monitor": "Direct European hardware competitor with strong presence in airport, public sector, and retail kiosk deployments — verticals where PARTTEAM is actively expanding. Pyramid competes on industrial-grade custom hardware and has a proven track record in large-scale public infrastructure projects. Their Chrome OS certification and cloud integration capabilities signal a move toward software-adjacent revenue, which overlaps with our Software and Recurring Revenue objective. A Pyramid win on a major EU public tender or airport contract in a target market is a direct competitive threat."
+    },
+    {
+      "id": "wanzl",
+      "name": "Wanzl",
+      "also_known_as": [],
+      "headquarters": "Leipheim, Germany",
+      "website": "wanzl.com",
+      "primary_focus": "Retail systems, self-checkout, and smart store solutions",
+      "key_verticals": ["Retail", "Supermarkets", "Logistics"],
+      "geographic_presence": ["Europe", "Global"],
+      "ownership": "Independent",
+      "why_we_monitor": "Competes directly on self-checkout and retail kiosk deployments across European supermarkets and retail chains — the same segment targeted by our SELFCASHY and YSCO Market product line. Wanzl has strong brand recognition and deep relationships with European grocery and hypermarket chains built over decades. Their move into smart store automation and integrated retail systems means they are expanding beyond hardware into the software layer. Any Wanzl product launch, retail chain partnership, or smart store deployment announcement in a target market is relevant to our retail vertical strategy."
+    },
+    {
+      "id": "broadsign",
+      "name": "Broadsign",
+      "also_known_as": [],
+      "headquarters": "Montreal, Canada",
+      "website": "broadsign.com",
+      "primary_focus": "DOOH software platform and programmatic advertising",
+      "key_verticals": ["DOOH", "Digital Signage", "OOH Advertising"],
+      "geographic_presence": ["Europe", "North America", "Global"],
+      "ownership": "Independent",
+      "why_we_monitor": "Dominant DOOH software and CMS platform in Europe. If municipal, transport, or retail clients adopt Broadsign as their content management standard, it creates a direct threat to our own CMS platform and The Brain remote management product. Broadsign's programmatic advertising integrations with major DSPs also represent a capability gap — if clients expect programmatic DOOH as standard, PARTTEAM must either integrate with Broadsign or build equivalent capability. Any Broadsign partnership with a hardware manufacturer, European network expansion, or new DSP integration is strategically relevant."
+    },
+    {
+      "id": "diebold-nixdorf",
+      "name": "Diebold Nixdorf",
+      "also_known_as": ["Diebold", "Nixdorf"],
+      "headquarters": "North Canton, Ohio, USA",
+      "website": "dieboldnixdorf.com",
+      "primary_focus": "Banking kiosks, ATMs, and retail self-service",
+      "key_verticals": ["Banking", "Retail", "Transport"],
+      "geographic_presence": ["Europe", "North America", "Global"],
+      "ownership": "Public (NYSE: DBD)",
+      "why_we_monitor": "Competes on banking, transport, and retail self-service tenders across Europe — including public procurement contracts that PARTTEAM also bids on. Large enough to win contracts by brand recognition alone in conservative public sector procurement processes. Their presence in transport kiosks and citizen services terminals overlaps with our Smart Cities and Public Procurement objective. Any Diebold Nixdorf tender win, product launch in transport or banking, or partnership with a European systems integrator active in public sector is relevant."
+    },
+    {
+      "id": "lamasatech",
+      "name": "LamasaTech",
+      "also_known_as": [],
+      "headquarters": "Dublin, Ireland",
+      "website": "lamasatech.com",
+      "primary_focus": "Indoor and outdoor kiosks and digital signage",
+      "key_verticals": ["Retail", "Corporate", "Public Sector"],
+      "geographic_presence": ["Europe", "Middle East"],
+      "ownership": "Independent",
+      "why_we_monitor": "Closest size and profile match to PARTTEAM among European kiosk manufacturers. Competes across overlapping verticals — retail, corporate, and public sector — and shares geographic focus including Europe and the Middle East. LamasaTech is a useful competitive benchmark for pricing, product positioning, and partner strategy. Their moves in the Middle East market are particularly relevant given PARTTEAM's own international expansion objective in that region. Any LamasaTech partnership, product launch, or market entry announcement in a shared target market warrants attention."
+    }
+  ]
+}
