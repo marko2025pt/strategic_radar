@@ -1,3 +1,4 @@
+# Strategic Radar - Autonomous Strategic Intelligence Snapshot Engine
 # Architecture Decisions
 
 This document records the key architectural decisions made during the design and implementation of the Autonomous Strategic Intelligence Snapshot Engine.
@@ -43,12 +44,13 @@ Separate the system into distinct layers with explicit responsibilities:
 |---|---|---|
 | Orchestration | N8N Cloud | Trigger, delivery, scheduling |
 | HTTP Interface | FastAPI + Railway | Entry point, request handling |
-| Human Interface | Gradio UI | Manual runs, demos |
+| Human Interface | Custom HTML UI | Manual runs, demos |
 | Workflow Control | LangGraph | State management, routing |
 | Cognition | ReAct Agent | Signal discovery, reasoning |
 | Knowledge | Pinecone RAG | Strategic grounding |
 | Data | External APIs | Live signal collection |
 | Intelligence | LLM | Evaluation, brief generation |
+| Delivery | SendGrid | Email delivery |
 
 **Reasoning:**
 Monolithic prompt-driven systems mix reasoning, control, and orchestration in ways that are fragile, hard to debug, and impossible to extend. Clear layer boundaries mean each component can be tested, replaced, or extended independently. When something breaks, you know exactly which layer to look at.
@@ -101,7 +103,7 @@ Accept any company name as free text input, allowing the agent to research any c
 Open-ended input introduces noise, ambiguity, and reliability issues. A query for "JCDecaux" might return results about unrelated companies with similar names. It also removes a useful forcing function — deciding which competitors matter enough to monitor is itself a strategic decision.
 
 **New Solution:**
-A predefined competitor registry stored in the knowledge base. The Gradio UI presents a dropdown, not a text field. Input validation checks the registry before any API call is made.
+A predefined competitor registry stored in the knowledge base. The UI presents a dropdown, not a text field. Input validation checks the registry before any API call is made.
 
 **Why This Provides More Business Value:**
 - Eliminates noise and ambiguity
@@ -139,7 +141,7 @@ Run the agent as a standalone Python script triggered by N8N's Execute Command n
 Local execution means the laptop must be on and running for the agent to work. No one can trigger it remotely. The teacher or CEO cannot test it independently. It is not a deployed product — it is a script that works on one machine.
 
 **New Solution:**
-FastAPI wraps the LangGraph agent and is deployed to Railway via git push. N8N Cloud sends HTTP requests to the Railway URL. Gradio is mounted at /ui on the same FastAPI server. Once deployed, the system runs independently of any local machine.
+FastAPI wraps the LangGraph agent and is deployed to Railway via git push. N8N Cloud sends HTTP requests to the Railway URL. Once deployed, the system runs independently of any local machine.
 
 **Why This Provides More Business Value:**
 - Anyone with the URL can trigger a run
@@ -149,15 +151,23 @@ FastAPI wraps the LangGraph agent and is deployed to Railway via git push. N8N C
 
 ---
 
-## Decision 8 — Two Entry Points: N8N (Automated) + Gradio (Human)
+## Decision 8 — Two Entry Points: N8N (Automated) + Custom HTML UI (Human)
 
 **Decision:**
 Implement two separate entry points that both call the same FastAPI endpoint:
 - N8N Cloud for automated, scheduled, or webhook-triggered runs
-- Gradio UI for manual runs and live demos
+- Custom HTML UI for manual runs and live demos
 
 **Reasoning:**
-N8N is powerful for automation but requires explaining webhooks and workflow diagrams to a non-technical audience. Gradio gives anyone a clean browser interface — select a competitor, select a time range, click a button, read the snapshot. For a CEO demo, this matters enormously. Both paths go through identical FastAPI → LangGraph → LLM logic, so there is no duplication of intelligence logic.
+N8N is powerful for automation but requires explaining webhooks and workflow diagrams to a non-technical audience. A custom single-page HTML interface gives anyone a clean browser experience — select a competitor, set a time range, enter an email, click Run, read the snapshot. For a CEO demo, this matters enormously. Both paths go through identical FastAPI → LangGraph → LLM logic, so there is no duplication of intelligence logic.
+
+**Why Custom HTML Over Gradio:**
+Gradio was the original plan. It was replaced with a custom HTML/CSS/JS single-page interface served as a static file from FastAPI. Reasons:
+- Professional appearance appropriate for executive audience
+- Full control over layout, typography, and interaction design
+- Live step-by-step progress animation not achievable in Gradio
+- Cascading dropdowns for intelligence type → second input not supported in Gradio
+- Same deployment complexity — one file, no additional dependencies
 
 ---
 
@@ -170,7 +180,7 @@ than markdown like the other KB documents.
 **Reasoning:**
 The registry serves two distinct purposes simultaneously:
 
-1. **Application logic** — input validation and Gradio dropdown population
+1. **Application logic** — input validation and UI dropdown population
    require programmatic access to competitor IDs and names. JSON is the
    natural format for this and can be loaded and queried directly in Python
    without any parsing layer.
@@ -192,6 +202,8 @@ Pinecone.
 This adds a small ETL step in `ingest.py` that the markdown documents do not
 require. This is an acceptable cost given the benefit of having a single source
 of truth that serves both the application layer and the RAG pipeline.
+
+---
 
 ## Decision 10 — Chunking Strategy: Semantic Units Over Token Count
 
@@ -254,6 +266,8 @@ Semantic chunking requires manual document design decisions upfront.
 This is an acceptable cost — the KB is small (4 documents, 24 chunks)
 and the quality improvement in retrieval precision justifies the effort.
 
+---
+
 ## Decision 11 — Pinecone Metadata Schema
 
 **Decision:**
@@ -300,6 +314,8 @@ correctly at embed time. This adds a small amount of complexity to
 ingest.py but is straightforward to implement and significantly improves
 retrieval quality in production.
 
+---
+
 ## Decision 12 — MCP Integration: In-Process Tool Definitions
 
 **Options Considered:**
@@ -315,6 +331,11 @@ retrieval quality in production.
 
 **What This Means in Practice:**
 Each tool is a Python function decorated with `@mcp.tool()`. The decorator provides the standardised tool schema (name, description, input types) that LangGraph's ReAct agent uses for tool discovery and invocation. The tools are registered directly with the agent at startup — no network calls, no separate servers.
+
+**Tools implemented:**
+- `tavily.py` — web search, primary signal discovery
+- `newsapi.py` — news articles, secondary signal discovery
+- `hackernews.py` — technology signals via Algolia HN Search API, no API key required
 
 **Trade-off:**
 Tools are not exposed as remote MCP endpoints that other agents or clients could call. This is acceptable for MVP — the MCP pattern is correctly implemented and demonstrable. Remote exposure is a post-MVP enhancement.
@@ -378,15 +399,71 @@ Logging added after the fact means the first bugs you encounter during developme
 **Trade-off:**
 Small overhead per module (two lines: import + logger instantiation). The payoff is complete observability from the first test run.
 
-**New project structure additions:**
-```
-strategic_radar/
-├── core/
-│   ├── __init__.py
-│   └── logging_config.py
-├── logs/
-│   └── YYYY-MM-DD.log    ← gitignored
-```
+---
+
+## Decision 15 — N8N Workflow Design: Two Workflows, One Email Provider
+
+**Decision:**
+Implement two separate N8N workflows with distinct triggers and delivery patterns, both using SendGrid as the single email provider.
+
+**Workflow 1 — On-Demand:**
+- Triggered by a webhook called by FastAPI `/notify` after every UI run that includes a `notify_email`
+- Formats the brief as HTML email and delivers to the user-provided address
+- Single recipient, single competitor, triggered in real time
+
+**Workflow 2 — Scheduled Weekly:**
+- Triggered by N8N schedule (every Monday 8am)
+- Loops through all 6 competitors using SplitInBatches node
+- Calls FastAPI `/run` for each competitor sequentially
+- Aggregates all 6 briefs into one combined HTML email
+- Delivers to fixed recipient defined in N8N
+
+**Why Two Workflows Instead of One:**
+- On-demand and scheduled have fundamentally different trigger mechanisms and output shapes
+- Combining them would require complex conditional logic that is harder to debug
+- Two clean, purpose-built workflows are easier to maintain, test, and explain
+
+**Why SendGrid Over Gmail:**
+Gmail blocks N8N Cloud as an unauthorised sender due to DMARC restrictions. SendGrid is purpose-built for transactional email from third-party applications, has no such restrictions, and provides delivery logs for debugging.
+
+**Why Outlook Sender Over Gmail Sender:**
+SendGrid requires a verified sender address. Gmail addresses sent via SendGrid trigger Gmail's DMARC alignment check and are deferred or blocked. An Outlook address (`@outlook.com`) does not have this restriction and verifies cleanly in SendGrid.
+
+**Why HTML Email Over PDF:**
+- HTML emails are lighter — a weekly brief covering 6 competitors as PDF would exceed 5MB
+- Links in HTML emails are clickable — sources open directly
+- HTML renders on mobile without requiring an app to open a PDF
+- PDF generation adds a dependency (wkhtmltopdf or similar) with no meaningful benefit for this use case
+
+**Trade-off:**
+HTML email rendering varies across email clients. Institutional clients (e.g. @ipca.pt) may display raw HTML in some configurations. Acceptable for MVP — the primary delivery target is a modern email client.
+
+---
+
+## Decision 16 — FastAPI /notify Endpoint: Decoupled Email Trigger
+
+**Decision:**
+Add a dedicated `/notify` endpoint to FastAPI that is called internally after `/run` completes and forwards the brief payload to the N8N webhook. Email delivery is handled by N8N, not by FastAPI directly.
+
+**Reasoning:**
+Two options were considered:
+
+1. FastAPI sends email directly via SendGrid SDK after each run
+2. FastAPI calls N8N webhook after each run — N8N handles email
+
+Option 2 was chosen because:
+- N8N is already the designated orchestration layer — email delivery belongs there
+- Keeping FastAPI free of email logic means one less dependency and one less failure mode
+- The N8N workflow is independently testable and replaceable without touching the agent
+- It satisfies the project requirement that N8N orchestrates the full workflow
+
+**Implementation:**
+The `/notify` call is non-blocking — it runs as a background task after the response is returned to the UI. If N8N is unavailable, the UI response is unaffected. The failure is logged as a warning, not an error.
+
+**Trade-off:**
+Adds a network hop between FastAPI and N8N. Acceptable — the UI has already received its response before the notification fires.
+
+---
 
 ## Trade-offs Summary
 
@@ -398,11 +475,16 @@ strategic_radar/
 | Controlled input over flexibility | Competitor registry + dropdown | Reliability and intentionality |
 | Working MVP over feature density | Layered V1.0 → V1.1 → V1.2 | Always have something to ship |
 | Cloud deployment over local script | FastAPI + Railway | Real product, not just a demo |
+| Custom HTML over Gradio | Single-page HTML UI | Professional appearance, full control |
 | Single source of truth over format purity | Competitor registry as JSON, reconstructed as text for RAG | Application logic and RAG ingestion served from one file |
 | Semantic chunking over token-based chunking | Chunk by ## heading, fatten thin chunks | Retrieval precision over implementation simplicity |
 | In-process MCP over separate MCP servers | @mcp.tool() decorator, same Railway process | Zero deployment risk over full MCP remote exposure |
 | Error handling from the start over retrofitting | Built into every module from line one | 10-15% more time per module, eliminates full refactor pass |
 | Centralised logging over per-module configuration | core/logging_config.py, imported everywhere | Two lines per module, complete observability from first run |
+| N8N email delivery over FastAPI direct send | /notify endpoint, non-blocking background task | N8N owns orchestration, FastAPI owns intelligence |
+| HTML email over PDF | No PDF generation dependency | Lighter, clickable, mobile-friendly |
+| Outlook sender over Gmail sender | strategicradar2026@outlook.com verified in SendGrid | No DMARC restrictions, clean delivery |
+| Two N8N workflows over one | On-demand + Scheduled are separate concerns | Simpler logic, easier to debug and maintain |
 
 ---
 
