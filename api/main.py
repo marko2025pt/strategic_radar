@@ -3,6 +3,7 @@ api/main.py — Strategic Radar FastAPI Server
 
 Entry points:
   POST /run      — trigger the LangGraph agent, return intelligence brief
+  POST /notify   — called internally after /run to trigger N8N email delivery
   GET  /health   — verify all services are reachable (used by Railway + N8N)
   GET  /ui       — static HTML interface (served from api/static/index.html)
 
@@ -16,8 +17,9 @@ import os
 import time
 from datetime import datetime
 from pathlib import Path
-from typing import Literal
+from typing import Literal, Optional
 
+import httpx
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -83,6 +85,10 @@ class RunRequest(BaseModel):
         "Technology Developments"
     ] = Field(default="Competitor Moves")
     time_range_days: int = Field(default=7, ge=1, le=30)
+    notify_email: Optional[str] = Field(
+        default="",
+        description="Optional email address to send the brief to via N8N"
+    )
 
     @validator("company")
     def company_not_empty(cls, v):
@@ -164,13 +170,14 @@ async def run(request: RunRequest):
 
     Called by:
       - The HTML UI (api/static/index.html)
-      - N8N Cloud webhook workflow
+      - N8N Cloud scheduled workflow
     """
     start = time.time()
     logger.info(
         f"Run requested — company={request.company!r} "
         f"type={request.intelligence_type!r} "
-        f"days={request.time_range_days}"
+        f"days={request.time_range_days} "
+        f"notify={request.notify_email!r}"
     )
 
     # Validate competitor against registry
@@ -186,7 +193,6 @@ async def run(request: RunRequest):
             )
 
     # Snap time_range_days to nearest valid value (7, 14, or 30)
-    # default_state() only accepts exactly 7, 14, or 30
     days = request.time_range_days
     snapped_days = min([7, 14, 30], key=lambda x: abs(x - days))
 
@@ -224,8 +230,8 @@ async def run(request: RunRequest):
     # Save report to reports/ directory
     _save_report(request, result, elapsed)
 
-    # Return the brief — shape matches what the HTML UI expects
-    return {
+    # Build response payload
+    response_payload = {
         "competitor":         request.company,
         "intelligence_type":  request.intelligence_type,
         "time_range_days":    snapped_days,
@@ -234,7 +240,53 @@ async def run(request: RunRequest):
         "llm_calls_made":     result.get("llm_calls_made", 0),
         "elapsed_seconds":    elapsed,
         "generated_at":       datetime.utcnow().isoformat() + "Z",
+        "notify_email":       request.notify_email or "",
     }
+
+    # Notify N8N for email delivery if email provided (non-blocking)
+    if request.notify_email and result.get("final_brief"):
+        asyncio.create_task(_notify_n8n(response_payload))
+
+    return response_payload
+
+
+@app.post("/notify")
+async def notify(payload: dict):
+    """
+    Can be called directly to trigger N8N email delivery.
+    Useful for testing the N8N workflow independently.
+    """
+    result = await _notify_n8n(payload)
+    return result
+
+
+# ── N8N NOTIFICATION ──────────────────────────────────────────────────────────
+
+async def _notify_n8n(payload: dict) -> dict:
+    """
+    POST the brief payload to the N8N webhook URL.
+    N8N Workflow 1 listens on this webhook and handles
+    PDF formatting and email delivery.
+    Silent on failure — never crashes the response.
+    """
+    n8n_webhook_url = os.getenv("N8N_WEBHOOK_URL", "")
+
+    if not n8n_webhook_url:
+        logger.warning("N8N_WEBHOOK_URL not set — skipping N8N notification")
+        return {"status": "skipped", "reason": "N8N_WEBHOOK_URL not configured"}
+
+    try:
+        async with httpx.AsyncClient(timeout=15.0) as client:
+            response = await client.post(n8n_webhook_url, json=payload)
+            response.raise_for_status()
+        logger.info(f"N8N notified — status={response.status_code}")
+        return {"status": "notified"}
+    except httpx.TimeoutException:
+        logger.warning("N8N notification timed out (non-critical)")
+        return {"status": "timeout"}
+    except Exception as e:
+        logger.warning(f"N8N notification failed (non-critical): {e}")
+        return {"status": "failed", "error": str(e)}
 
 
 # ── REPORT PERSISTENCE ────────────────────────────────────────────────────────
