@@ -1,0 +1,107 @@
+{
+  "name": "Strategic Radar — On-Demand",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "strategic-radar-ondemand",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-trigger",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.body.final_brief }}",
+              "operation": "isNotEmpty"
+            }
+          ]
+        }
+      },
+      "id": "check-brief",
+      "name": "Brief exists?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $input.first().json.body;\nconst signals = data.signals || [];\n\nconst formatSignals = (level) => {\n  const group = signals.filter(s => s.impact_level === level);\n  if (!group.length) return '';\n  let out = `<h3 style=\"color:${level==='High'?'#c0392b':level==='Medium'?'#d17a00':'#2d8a4e'}\">${level} Impact</h3>`;\n  group.forEach(s => {\n    out += `<div style=\"border-left:3px solid ${level==='High'?'#c0392b':level==='Medium'?'#d17a00':'#2d8a4e'};padding:10px 14px;margin-bottom:12px;background:#fafafa\">`;\n    out += `<strong>${s.title || ''}</strong>`;\n    if (s.url) out += ` <a href=\"${s.url}\">[source]</a>`;\n    out += `<br/><span style=\"color:#666;font-size:13px\">${s.impact_summary || ''}</span>`;\n    if (s.strategic_link) out += `<br/><span style=\"color:#999;font-size:12px\">→ ${s.strategic_link}</span>`;\n    if (s.confidence) out += `<span style=\"float:right;color:#999;font-size:12px\">${s.confidence}/10</span>`;\n    out += '</div>';\n  });\n  return out;\n};\n\nlet takeaway = data.executive_takeaway || '';\nif (takeaway.includes('── EXECUTIVE TAKEAWAY')) {\n  takeaway = takeaway.split('── EXECUTIVE TAKEAWAY')[1].replace(/─+/g,'').trim();\n}\n\nconst html = `\n<!DOCTYPE html>\n<html>\n<head><meta charset=\"utf-8\"><style>\n  body { font-family: Georgia, serif; max-width: 680px; margin: 40px auto; color: #1a1a1a; }\n  h1 { font-size: 22px; border-bottom: 2px solid #1a1a1a; padding-bottom: 8px; }\n  .meta { color: #666; font-size: 13px; margin-bottom: 24px; }\n  .takeaway { background: #1a1a1a; color: white; padding: 16px 20px; border-radius: 4px; margin-top: 24px; }\n  .takeaway-label { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; opacity: 0.5; margin-bottom: 6px; }\n  .stats { display: flex; gap: 24px; margin-bottom: 24px; }\n  .stat { text-align: center; }\n  .stat-value { font-size: 28px; font-weight: 300; }\n  .stat-label { font-size: 11px; text-transform: uppercase; color: #999; }\n</style></head>\n<body>\n  <h1>Strategic Radar — ${data.competitor}</h1>\n  <div class=\"meta\">${data.intelligence_type} · Last ${data.time_range_days} days · ${data.generated_at ? new Date(data.generated_at).toLocaleDateString('en-GB') : ''} · ${data.llm_calls_made || 0}/7 LLM calls · ${data.elapsed_seconds || 0}s</div>\n  <div class=\"stats\">\n    <div class=\"stat\"><div class=\"stat-value\" style=\"color:#c0392b\">${signals.filter(s=>s.impact_level==='High').length}</div><div class=\"stat-label\">High</div></div>\n    <div class=\"stat\"><div class=\"stat-value\" style=\"color:#d17a00\">${signals.filter(s=>s.impact_level==='Medium').length}</div><div class=\"stat-label\">Medium</div></div>\n    <div class=\"stat\"><div class=\"stat-value\" style=\"color:#2d8a4e\">${signals.filter(s=>s.impact_level==='Low').length}</div><div class=\"stat-label\">Low</div></div>\n    <div class=\"stat\"><div class=\"stat-value\">${signals.length}</div><div class=\"stat-label\">Total</div></div>\n  </div>\n  ${formatSignals('High')}\n  ${formatSignals('Medium')}\n  ${formatSignals('Low')}\n  <div class=\"takeaway\">\n    <div class=\"takeaway-label\">Executive Takeaway</div>\n    <p style=\"margin:0;line-height:1.6;font-size:14px\">${takeaway}</p>\n  </div>\n</body>\n</html>`;\n\nreturn [{ json: { html, subject: `Strategic Radar — ${data.competitor} (${data.intelligence_type})`, to: data.notify_email || '' } }];"
+      },
+      "id": "format-html",
+      "name": "Format HTML Brief",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [680, 200]
+    },
+    {
+      "parameters": {
+        "fromEmail": "radar@yourdomain.com",
+        "toEmail": "={{ $json.to }}",
+        "subject": "={{ $json.subject }}",
+        "emailType": "html",
+        "message": "={{ $json.html }}",
+        "options": {}
+      },
+      "id": "send-email",
+      "name": "Send Email",
+      "type": "n8n-nodes-base.sendGrid",
+      "typeVersion": 1,
+      "position": [900, 200],
+      "credentials": {
+        "sendGridApi": {
+          "id": "sendgrid-creds",
+          "name": "SendGrid"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={ \"status\": \"email_sent\" }"
+      },
+      "id": "respond-ok",
+      "name": "Respond OK",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1120, 200]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={ \"status\": \"skipped\", \"reason\": \"no brief\" }"
+      },
+      "id": "respond-skip",
+      "name": "Respond Skip",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [680, 420]
+    }
+  ],
+  "connections": {
+    "Webhook Trigger": {
+      "main": [[{ "node": "Brief exists?", "type": "main", "index": 0 }]]
+    },
+    "Brief exists?": {
+      "main": [
+        [{ "node": "Format HTML Brief", "type": "main", "index": 0 }],
+        [{ "node": "Respond Skip", "type": "main", "index": 0 }]
+      ]
+    },
+    "Format HTML Brief": {
+      "main": [[{ "node": "Send Email", "type": "main", "index": 0 }]]
+    },
+    "Send Email": {
+      "main": [[{ "node": "Respond OK", "type": "main", "index": 0 }]]
+    }
+  },
+  "active": true,
+  "settings": { "executionOrder": "v1" }
+}

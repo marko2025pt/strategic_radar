@@ -163,25 +163,32 @@
       letter-spacing: 0.01em;
     }
 
-    select, input[type="range"] {
+    select, input[type="email"], input[type="range"] {
       width: 100%;
       outline: none;
       font-family: 'DM Sans', sans-serif;
     }
 
-    select {
-      appearance: none;
-      background: var(--surface) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%234a5066' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat right 12px center;
+    select, input[type="email"] {
+      background: var(--surface);
       border: 1px solid var(--border);
       border-radius: var(--radius);
-      padding: 9px 36px 9px 12px;
+      padding: 9px 12px;
       font-size: 0.875rem;
       color: var(--ink);
-      cursor: pointer;
       transition: border-color var(--transition);
     }
 
-    select:focus { border-color: var(--accent); }
+    select {
+      appearance: none;
+      background: var(--surface) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%234a5066' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat right 12px center;
+      padding-right: 36px;
+      cursor: pointer;
+    }
+
+    select:focus, input[type="email"]:focus { border-color: var(--accent); }
+
+    input[type="email"]::placeholder { color: var(--ink-muted); }
 
     .range-wrapper { display: flex; flex-direction: column; gap: 8px; }
 
@@ -328,9 +335,7 @@
 
     .progress-view.active { display: flex; }
 
-    .progress-header {
-      margin-bottom: 32px;
-    }
+    .progress-header { margin-bottom: 32px; }
 
     .progress-label {
       font-size: 0.8rem;
@@ -407,7 +412,6 @@
     }
 
     .step.done .step-dot-inner { display: none; }
-
     .step-check { display: none; }
     .step.done .step-check { display: block; color: var(--white); }
 
@@ -458,21 +462,11 @@
       color: var(--ink);
     }
 
-    .brief-timestamp {
-      font-size: 0.72rem;
-      color: var(--ink-muted);
-    }
+    .brief-timestamp { font-size: 0.72rem; color: var(--ink-muted); }
 
-    .brief-stats {
-      display: flex;
-      gap: 24px;
-    }
+    .brief-stats { display: flex; gap: 24px; }
 
-    .stat {
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-    }
+    .stat { display: flex; flex-direction: column; gap: 2px; }
 
     .stat-value {
       font-size: 1.5rem;
@@ -503,11 +497,7 @@
       margin-bottom: 4px;
     }
 
-    .group-label .dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-    }
+    .group-label .dot { width: 8px; height: 8px; border-radius: 50%; }
 
     .label-high { color: var(--high); }
     .label-med  { color: var(--med); }
@@ -593,6 +583,19 @@
       color: rgba(255,255,255,0.9);
     }
 
+    /* ── EMAIL SENT NOTICE ── */
+    .email-notice {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.78rem;
+      color: var(--low);
+      background: var(--low-bg);
+      border: 1px solid #b8e8c8;
+      border-radius: var(--radius);
+      padding: 10px 14px;
+    }
+
     .btn-export {
       align-self: flex-end;
       background: transparent;
@@ -624,7 +627,6 @@
     }
 
     .error-view.active { display: flex; }
-
     .error-icon { font-size: 2rem; opacity: 0.6; }
 
     .error-msg {
@@ -685,12 +687,7 @@
       flex-shrink: 0;
     }
 
-    .history-name {
-      font-size: 0.875rem;
-      font-weight: 500;
-      flex: 1;
-    }
-
+    .history-name { font-size: 0.875rem; font-weight: 500; flex: 1; }
     .history-meta { font-size: 0.72rem; color: var(--ink-muted); }
   </style>
 </head>
@@ -755,6 +752,15 @@
                 <span>30 days</span>
               </div>
             </div>
+          </div>
+
+          <div class="field">
+            <label for="notifyEmail">Email Report To <span style="color:var(--ink-muted);font-weight:400">(optional)</span></label>
+            <input
+              type="email"
+              id="notifyEmail"
+              placeholder="your@email.com"
+            >
           </div>
 
           <button class="btn-run" id="runBtn" onclick="runAgent()">
@@ -885,6 +891,13 @@
             <div class="takeaway-text" id="takeawayText">—</div>
           </div>
 
+          <div class="email-notice" id="emailNotice" style="display:none">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <path d="M1 3h12v8H1V3zm0 0l6 5 6-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            Brief sent to <span id="emailNoticeAddr" style="font-weight:600;margin-left:4px"></span>
+          </div>
+
           <button class="btn-export" onclick="exportBrief()">
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
               <path d="M7 1v8M4 6l3 3 3-3M2 11h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
@@ -916,27 +929,26 @@
   // ── CONFIG ────────────────────────────────────────────────────────────────
   const API_BASE = window.location.origin;
 
-  // Second input options per intelligence type
   const SECOND_INPUT_CONFIG = {
     "Competitor Moves": {
       label: "Competitor",
       options: [
-        { value: "Acrelec",        label: "Acrelec" },
+        { value: "Acrelec",         label: "Acrelec" },
         { value: "Pyramid Computer", label: "Pyramid Computer" },
-        { value: "Wanzl",          label: "Wanzl" },
-        { value: "Broadsign",      label: "Broadsign" },
-        { value: "Diebold Nixdorf",label: "Diebold Nixdorf" },
-        { value: "LamasaTech",     label: "LamasaTech" },
+        { value: "Wanzl",           label: "Wanzl" },
+        { value: "Broadsign",       label: "Broadsign" },
+        { value: "Diebold Nixdorf", label: "Diebold Nixdorf" },
+        { value: "LamasaTech",      label: "LamasaTech" },
       ]
     },
     "Business Opportunities": {
       label: "Sector",
       options: [
-        { value: "QSR and Food Service",       label: "QSR & Food Service" },
-        { value: "Smart Cities",               label: "Smart Cities" },
-        { value: "Airport and Transport",      label: "Airport & Transport" },
-        { value: "Retail",                     label: "Retail" },
-        { value: "Public Services",            label: "Public Services" },
+        { value: "QSR and Food Service",  label: "QSR & Food Service" },
+        { value: "Smart Cities",          label: "Smart Cities" },
+        { value: "Airport and Transport", label: "Airport & Transport" },
+        { value: "Retail",                label: "Retail" },
+        { value: "Public Services",       label: "Public Services" },
       ]
     },
     "Technology Developments": {
@@ -966,7 +978,6 @@
     document.getElementById('rangeLabel').textContent = this.value + ' days';
   });
 
-  // Populate second input on page load
   updateSecondInput();
 
   function updateSecondInput() {
@@ -995,9 +1006,7 @@
     if (detail) document.getElementById('detail-' + stepId).textContent = detail;
   }
 
-  function resetSteps() {
-    STEPS.forEach(s => setStep(s, 'pending'));
-  }
+  function resetSteps() { STEPS.forEach(s => setStep(s, 'pending')); }
 
   async function simulateProgress() {
     const stages = [
@@ -1037,13 +1046,13 @@
     resetSteps();
   }
 
-  function showBrief(data) {
+  function showBrief(data, email) {
     document.getElementById('emptyState').style.display = 'none';
     document.getElementById('progressView').classList.remove('active');
     document.getElementById('briefView').classList.add('active');
     document.getElementById('errorView').classList.remove('active');
     setBadge('done', 'Complete');
-    renderBrief(data);
+    renderBrief(data, email);
   }
 
   function showError(msg) {
@@ -1069,6 +1078,7 @@
     const intelType   = document.getElementById('intel-type').value;
     const secondValue = document.getElementById('secondInput').value;
     const timeRange   = parseInt(document.getElementById('timeRange').value);
+    const email       = document.getElementById('notifyEmail').value.trim();
 
     if (!secondValue) {
       const config = SECOND_INPUT_CONFIG[intelType];
@@ -1082,11 +1092,11 @@
 
     showProgress(secondValue);
 
-    // Build payload — company field always carries the second input value
     const payload = {
-      company:          secondValue,
+      company:           secondValue,
       intelligence_type: intelType,
-      time_range_days:  timeRange,
+      time_range_days:   timeRange,
+      notify_email:      email,
     };
 
     try {
@@ -1107,7 +1117,7 @@
       const data = await response.json();
       lastBrief = data;
       addToHistory(secondValue, intelType, timeRange, data);
-      showBrief(data);
+      showBrief(data, email);
 
     } catch (err) {
       showError(err.message);
@@ -1118,8 +1128,7 @@
   }
 
   // ── RENDER BRIEF ──────────────────────────────────────────────────────────
-  function renderBrief(data) {
-    // Title + timestamp
+  function renderBrief(data, email) {
     document.getElementById('briefTitle').textContent =
       `${data.competitor || '—'} — ${data.intelligence_type || '—'}`;
     document.getElementById('briefTimestamp').textContent =
@@ -1128,7 +1137,6 @@
         hour: '2-digit', minute: '2-digit'
       });
 
-    // Stats — using correct field names from agent
     const signals = data.signals || [];
     const high = signals.filter(s => s.impact_level === 'High').length;
     const med  = signals.filter(s => s.impact_level === 'Medium').length;
@@ -1141,15 +1149,13 @@
       <div class="stat"><div class="stat-value">${signals.length}</div><div class="stat-label">Total</div></div>
     `;
 
-    // Signals grouped by impact_level
     const container = document.getElementById('signalsContainer');
     container.innerHTML = '';
 
     ['High', 'Medium', 'Low'].forEach(level => {
       const group = signals.filter(s => s.impact_level === level);
       if (!group.length) return;
-
-      const cls   = level === 'Medium' ? 'med' : level.toLowerCase();
+      const cls = level === 'Medium' ? 'med' : level.toLowerCase();
       const groupEl = document.createElement('div');
       groupEl.className = 'signals-group';
       groupEl.innerHTML = `
@@ -1167,7 +1173,7 @@
               </div>
               <div class="signal-rationale">${escHtml(sig.impact_summary || '')}</div>
               <div class="signal-meta">
-                ${sig.source     ? `<span>${escHtml(sig.source)}</span>` : ''}
+                ${sig.source       ? `<span>${escHtml(sig.source)}</span>` : ''}
                 ${sig.published_at ? `<span>${escHtml(sig.published_at)}</span>` : ''}
                 ${sig.strategic_link ? `<span>${escHtml(sig.strategic_link)}</span>` : ''}
               </div>
@@ -1181,14 +1187,21 @@
       container.appendChild(groupEl);
     });
 
-    // Executive takeaway — extract just the last paragraph if it's the
-    // full formatted brief string, otherwise use as-is
     let takeaway = data.executive_takeaway || '—';
     if (takeaway.includes('── EXECUTIVE TAKEAWAY')) {
       takeaway = takeaway.split('── EXECUTIVE TAKEAWAY')[1]
         .replace(/─+/g, '').trim();
     }
     document.getElementById('takeawayText').textContent = takeaway;
+
+    // Show email notice if email was provided
+    const notice = document.getElementById('emailNotice');
+    if (email) {
+      document.getElementById('emailNoticeAddr').textContent = email;
+      notice.style.display = 'flex';
+    } else {
+      notice.style.display = 'none';
+    }
   }
 
   function escHtml(str) {
@@ -1222,7 +1235,7 @@
     const run = runHistory[i];
     if (!run) return;
     lastBrief = run.data;
-    showBrief(run.data);
+    showBrief(run.data, '');
   }
 
   // ── EXPORT ────────────────────────────────────────────────────────────────
@@ -1244,9 +1257,9 @@
       lines.push(`── ${level.toUpperCase()} IMPACT ──`);
       group.forEach(s => {
         lines.push(`• ${s.title || ''} (${s.confidence || 0}/10)`);
-        if (s.impact_summary)   lines.push(`  ${s.impact_summary}`);
-        if (s.strategic_link)   lines.push(`  → ${s.strategic_link}`);
-        if (s.url)              lines.push(`  ${s.url}`);
+        if (s.impact_summary)  lines.push(`  ${s.impact_summary}`);
+        if (s.strategic_link)  lines.push(`  → ${s.strategic_link}`);
+        if (s.url)             lines.push(`  ${s.url}`);
         lines.push('');
       });
     });
@@ -1269,7 +1282,6 @@
   }
 
   // ── DEMO MODE ─────────────────────────────────────────────────────────────
-  // Type demoRun() in the browser console to test rendering without a live API
   window.demoRun = function () {
     const fake = {
       competitor: 'Acrelec',
@@ -1283,7 +1295,7 @@
       ]
     };
     lastBrief = fake;
-    showBrief(fake);
+    showBrief(fake, '');
     addToHistory('Acrelec', 'Competitor Moves', 7, fake);
   };
 </script>
