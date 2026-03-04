@@ -130,6 +130,7 @@ required. @mcp.tool() registered.
 ## Pipeline Status
 
 End-to-end pipeline verified ✅
+Tools refactored to modular architecture ✅
 
 First real run — Acrelec, Competitor Moves, 7 days:
 - 5 raw signals collected (all from Tavily)
@@ -140,7 +141,12 @@ First real run — Acrelec, Competitor Moves, 7 days:
 - Key finding: Glory fully acquired Acrelec + leadership reset
   → High impact on PARTTEAM's QSR and international expansion objectives
 
+
 ---
 
-## Immediate Next Step
-Build `api/main.py` — FastAPI server with Gradio UI mounted at /ui.
+## Tomorrow — Day 3 Plan
+1. api/main.py — FastAPI server with Gradio UI mounted at /ui
+2. n8n/workflow.json — automated orchestration and email delivery
+3. Railway deployment — live production system
+
+Afternoon: MVP V1.1 — Business Opportunities branch (TED API)

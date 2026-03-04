@@ -1,0 +1,56 @@
+{
+  "competitor": "Acrelec",
+  "intelligence_type": "Competitor Moves",
+  "time_range_days": 7,
+  "generated_at": "2026-03-04T08:17:58.269276Z",
+  "elapsed_seconds": 37.2,
+  "signals": [
+    {
+      "title": "GLORY Acquires Remaining Equity Shares in Acrelec Group",
+      "url": "https://siliconcanals.com/glory-acquires-remaining-equity-shares-in-acrelec-group/",
+      "snippet": "GLORY Acquires Remaining Equity Shares in Acrelec Group - Glory Global Solutions (International) Ltd, a wholly-owned subsidiary of GLORY Ltd. [TYO:6457], has announced the acquisition.",
+      "source": "Silicon Canals",
+      "published_at": "November 26, 2025",
+      "source_type": "News",
+      "api_origin": "tavily",
+      "selection_reason": "This acquisition indicates a significant change in ownership and potential strategic direction for Acrelec.",
+      "impact_level": "High",
+      "impact_summary": "The acquisition of Acrelec by Glory Ltd could lead to increased investment and strategic focus on Acrelec's QSR self-ordering kiosks and drive-thru technology, directly threatening PARTTEAM's growth objectives in the QSR vertical. Acrelec's strengthened position and potential acceleration in European mid-market penetration could undermine PARTTEAM's NOMYU QSR hardware and YSnack software offerings.",
+      "strategic_link": "Objective 1 \u2014 International Expansion",
+      "rag_score": 0.5204,
+      "confidence": 4.3
+    },
+    {
+      "title": "Acrelec Group Appoints New Company President, CEO",
+      "url": "https://www.builtinchicago.org/articles/acrelec-appoints-president-ceo-20260105",
+      "snippet": "Acrelec Group announced a leadership transition ahead of anticipated global growth. The company specializes in self-ordering kiosks and digital solutions for quick service restaurants.",
+      "source": "Built In Chicago",
+      "published_at": "January 05, 2026",
+      "source_type": "News",
+      "api_origin": "tavily",
+      "selection_reason": "Leadership changes can signal strategic shifts and new growth opportunities for Acrelec.",
+      "impact_level": "Medium",
+      "impact_summary": "The appointment of a new CEO at Acrelec could signal strategic shifts that may affect their competitive positioning in the QSR market. Given Acrelec's strong presence and capabilities in AI-driven upsell, any strategic changes could indirectly impact PARTTEAM's growth objectives in the QSR vertical, especially in Europe.",
+      "strategic_link": "Objective 2 \u2014 QSR and Food Service Market Growth",
+      "rag_score": 0.6705,
+      "confidence": 5.2
+    },
+    {
+      "title": "ACRELEC's Facial Authentication Technology Paving the Future for ...",
+      "url": "https://acrelec.com/acrelecs-facial-authentication-technology-paving-the-future-for-qsrs/",
+      "snippet": "ACRELEC partners with PopID to launch kiosks equipped with facial authentication technology, enhancing efficiency, security and convenience in the US.",
+      "source": "Acrelec",
+      "published_at": "September 11, 2023",
+      "source_type": "News",
+      "api_origin": "tavily",
+      "selection_reason": "The launch of facial authentication technology represents a significant technological innovation in Acrelec's product offerings.",
+      "impact_level": "High",
+      "impact_summary": "Acrelec's launch of facial authentication technology in kiosks represents a significant technological advancement that could redefine customer expectations in the QSR vertical, where PARTTEAM directly competes. This innovation enhances security and convenience, potentially giving Acrelec a competitive edge and threatening PARTTEAM's market position, especially if mid-size QSR chains adopt this as a standard feature.",
+      "strategic_link": "QSR growth objective and AI-driven personalisation and upsell at the kiosk",
+      "rag_score": 0.4911,
+      "confidence": 4.1
+    }
+  ],
+  "executive_takeaway": "Strategic Snapshot \u2014 Acrelec (Last 7 Days)\n\n\u2500\u2500 HIGH IMPACT \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n\u2022 GLORY Acquires Remaining Equity Shares in Acrelec Group \u2014 Confidence: 4.3/10  \n  Impact: The acquisition could lead to increased investment in Acrelec's QSR self-ordering kiosks, threatening PARTTEAM's growth in the QSR vertical.  \n  Strategic Link: Objective 1 \u2014 International Expansion  \n  Source: [https://siliconcanals.com/glory-acquires-remaining-equity-shares-in-acrelec-group/](https://siliconcanals.com/glory-acquires-remaining-equity-shares-in-acrelec-group/)\n\n\u2022 ACRELEC's Facial Authentication Technology Paving the Future for ... \u2014 Confidence: 4.1/10  \n  Impact: Acrelec's facial authentication technology could redefine customer expectations in the QSR vertical, potentially giving them a competitive edge over PARTTEAM.  \n  Strategic Link: QSR growth objective and AI-driven personalisation and upsell at the kiosk  \n  Source: [https://acrelec.com/acrelecs-facial-authentication-technology-paving-the-future-for-qsrs/](https://acrelec.com/acrelecs-facial-authentication-technology-paving-the-future-for-qsrs/)\n\n\u2500\u2500 MEDIUM IMPACT \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n\u2022 Acrelec Group Appoints New Company President, CEO \u2014 Confidence: 5.2/10  \n  Impact: The new CEO could signal strategic shifts affecting Acrelec's competitive positioning in the QSR market, indirectly impacting PARTTEAM's growth objectives.  \n  Strategic Link: Objective 2 \u2014 QSR and Food Service Market Growth  \n  Source: [https://www.builtinchicago.org/articles/acrelec-appoints-president-ceo-20260105](https://www.builtinchicago.org/articles/acrelec-appoints-president-ceo-20260105)\n\n\u2500\u2500 LOW IMPACT \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\nNo signals at this impact level.\n\n\u2500\u2500 EXECUTIVE TAKEAWAY \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\nAcrelec's recent developments, including the acquisition by Glory Ltd and the launch of facial authentication technology, pose significant competitive threats to PARTTEAM's position in the QSR vertical. Leadership should prioritize enhancing technological innovation and strategic partnerships to counteract Acrelec's advancements. Additionally, monitoring Acrelec's strategic direction under new leadership will be crucial to anticipate market shifts and adjust PARTTEAM's strategies accordingly.",
+  "llm_calls_made": 5
+}

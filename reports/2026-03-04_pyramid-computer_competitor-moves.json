@@ -1,0 +1,26 @@
+{
+  "competitor": "Pyramid Computer",
+  "intelligence_type": "Competitor Moves",
+  "time_range_days": 7,
+  "generated_at": "2026-03-04T08:19:24.581578Z",
+  "elapsed_seconds": 27.6,
+  "signals": [
+    {
+      "title": "QSR by Pyramid Computer and Intel Showcase",
+      "url": "https://kioskindustry.org/qsr-by-pyramid-computer-and-intel-showcase",
+      "snippet": "More Pyramid Information\n\nContactless Touchless Using Your Eyes \u2013 Pyramid Computer\n\nContactless kiosk \u2013 temperature kiosk \u2013 Pyramid\n\nEuroShop News \u2013 New Desktop Kiosk By Pyramid\n\nWith over 40 years in the industry, Craig is considered to be one of the top experts in the field. Kiosk projects include",
+      "source": "",
+      "published_at": "",
+      "source_type": "",
+      "api_origin": "tavily",
+      "selection_reason": "This signal highlights a strategic partnership between Pyramid Computer and Intel, showcasing innovations in contactless kiosk technology, which is crucial for market competitiveness.",
+      "impact_level": "High",
+      "impact_summary": "The strategic partnership between Pyramid Computer and Intel to showcase contactless kiosk technology poses a direct threat to PARTTEAM's market position, especially in the public sector and retail verticals where touchless interaction is becoming a key differentiator. This development could redefine buyer expectations and impact PARTTEAM's competitive edge in these sectors, aligning with our strategic focus on touchless and gesture-based interaction technologies.",
+      "strategic_link": "Technology \u2014 Touchless and Gesture-Based Interaction",
+      "rag_score": 0.6331,
+      "confidence": 5.0
+    }
+  ],
+  "executive_takeaway": "Strategic Snapshot \u2014 Pyramid Computer (Last 7 Days)\n\n\u2500\u2500 HIGH IMPACT \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n\u2022 QSR by Pyramid Computer and Intel Showcase \u2014 Confidence: 5.0/10\n  Impact: The strategic partnership between Pyramid Computer and Intel to showcase contactless kiosk technology poses a direct threat to PARTTEAM's market position, especially in the public sector and retail verticals where touchless interaction is becoming a key differentiator.\n  Strategic Link: Technology \u2014 Touchless and Gesture-Based Interaction\n  Source: https://kioskindustry.org/qsr-by-pyramid-computer-and-intel-showcase\n\n\u2500\u2500 MEDIUM IMPACT \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\nNo signals at this impact level.\n\n\u2500\u2500 LOW IMPACT \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\nNo signals at this impact level.\n\n\u2500\u2500 EXECUTIVE TAKEAWAY \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\nPyramid Computer's collaboration with Intel to advance touchless kiosk technology is a significant strategic move that could alter market dynamics in sectors critical to PARTTEAM. Leadership should prioritize accelerating development and marketing of our own touchless solutions to maintain competitive parity. Additionally, exploring potential partnerships or technological enhancements in this domain could be crucial to safeguarding our market share and meeting evolving customer expectations.",
+  "llm_calls_made": 3
+}

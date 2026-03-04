@@ -1,0 +1,56 @@
+{
+  "competitor": "Wanzl",
+  "intelligence_type": "Competitor Moves",
+  "time_range_days": 7,
+  "generated_at": "2026-03-04T08:27:53.795406Z",
+  "elapsed_seconds": 34.5,
+  "signals": [
+    {
+      "title": "Lincoln County, NC",
+      "url": "https://lincolneda.org/press-release-lincoln-economic-development-association-celebrates-wanzl-north-americas-expansion-to-denver-nc/",
+      "snippet": "The Lincoln Economic Development Association (LEDA) announced the news of Wanzl North America\u2019s relocation of its headquarters to Denver, NC on Monday, in its November 6th\u2019s meeting of the Board of Commissioners. This strategic move marks a significant step in Wanzl\u2019s expansion plans, supported by i",
+      "source": "",
+      "published_at": "",
+      "source_type": "press release",
+      "api_origin": "tavily",
+      "selection_reason": "This signal highlights Wanzl's strategic relocation and expansion, indicating growth and increased market presence in North America.",
+      "impact_level": "Medium",
+      "impact_summary": "Wanzl's relocation of its North American headquarters to Denver, NC indicates their strategic expansion in the North American market, which could enhance their market presence and capabilities in self-checkout and retail systems. While this move does not directly impact PARTTEAM's current strategic objectives, it is worth monitoring as it may influence competitive dynamics in the retail vertical, particularly if Wanzl strengthens its position in smart store solutions.",
+      "strategic_link": "Retail vertical strategy and competitive positioning in self-checkout and retail kiosk deployments.",
+      "rag_score": 0.3718,
+      "confidence": 3.4
+    },
+    {
+      "title": "Global manufacturer to expand, add new jobs in Catawba County",
+      "url": "https://charlotteregion.com/news/global-manufacturer-to-expand-add-new-jobs-in-catawba-county/",
+      "snippet": "Wanzl North America, a leading solution provider and global manufacturer of retail equipment, has announced a $15 million investment to expand its Catawba County facility over the next three years.",
+      "source": "",
+      "published_at": "",
+      "source_type": "news",
+      "api_origin": "tavily",
+      "selection_reason": "The $15 million investment in Catawba County signifies Wanzl's commitment to expanding its manufacturing capabilities and workforce, enhancing its competitive edge.",
+      "impact_level": "Medium",
+      "impact_summary": "Wanzl's expansion in Catawba County indicates a strengthening of their manufacturing capabilities, which could enhance their competitive position in the retail systems market. While this expansion is not directly in a target market for PARTTEAM & OEMKIOSKS, it is worth monitoring as it may lead to increased competition in the self-checkout and retail kiosk segments where both companies operate.",
+      "strategic_link": "Core Software and Services",
+      "rag_score": 0.5016,
+      "confidence": 4.2
+    },
+    {
+      "title": "Wanzl Announces Expansion and Investment in ...",
+      "url": "https://www.catawbaedc.org/news/wanzl-expansion-Nov-2023",
+      "snippet": "Wanzl North America, a leading solution provider and global manufacturer of retail equipment, and holding the market position of being the largest manufacturer of shopping carts in North America, has announced a significant renovation at its Catawba County facility.",
+      "source": "",
+      "published_at": "",
+      "source_type": "news",
+      "api_origin": "tavily",
+      "selection_reason": "This signal underscores Wanzl's strategic investment in facility renovation, which is crucial for maintaining its leadership in the retail equipment market.",
+      "impact_level": "Medium",
+      "impact_summary": "Wanzl's investment in its North American facility indicates a strengthening of its manufacturing capabilities, which could enhance its competitive position in the retail equipment market. While this move is geographically focused on North America, Wanzl's overall strategic growth in retail systems and smart store solutions could indirectly affect PARTTEAM's market position in Europe, where both companies compete in the self-checkout and retail kiosk segments.",
+      "strategic_link": "Retail vertical strategy and competitive positioning in self-checkout and retail kiosks",
+      "rag_score": 0.6308,
+      "confidence": 5.0
+    }
+  ],
+  "executive_takeaway": "Strategic Snapshot \u2014 Wanzl (Last 7 Days)\n\n\u2500\u2500 HIGH IMPACT \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\nNo signals at this impact level.\n\n\u2500\u2500 MEDIUM IMPACT \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n\u2022 Lincoln County, NC \u2014 Confidence: 3.4/10  \n  Impact: Wanzl's relocation of its North American headquarters to Denver, NC indicates their strategic expansion in the North American market, potentially influencing competitive dynamics in the retail vertical.  \n  Strategic Link: Retail vertical strategy and competitive positioning in self-checkout and retail kiosk deployments.  \n  Source: [https://lincolneda.org/press-release-lincoln-economic-development-association-celebrates-wanzl-north-americas-expansion-to-denver-nc/](https://lincolneda.org/press-release-lincoln-economic-development-association-celebrates-wanzl-north-americas-expansion-to-denver-nc/)\n\n\u2022 Global manufacturer to expand, add new jobs in Catawba County \u2014 Confidence: 4.2/10  \n  Impact: Wanzl's expansion in Catawba County could enhance their manufacturing capabilities, potentially increasing competition in the self-checkout and retail kiosk segments.  \n  Strategic Link: Core Software and Services  \n  Source: [https://charlotteregion.com/news/global-manufacturer-to-expand-add-new-jobs-in-catawba-county/](https://charlotteregion.com/news/global-manufacturer-to-expand-add-new-jobs-in-catawba-county/)\n\n\u2022 Wanzl Announces Expansion and Investment in ... \u2014 Confidence: 5.0/10  \n  Impact: Wanzl's investment in its North American facility strengthens its manufacturing capabilities, potentially affecting PARTTEAM's market position in Europe.  \n  Strategic Link: Retail vertical strategy and competitive positioning in self-checkout and retail kiosks  \n  Source: [https://www.catawbaedc.org/news/wanzl-expansion-Nov-2023](https://www.catawbaedc.org/news/wanzl-expansion-Nov-2023)\n\n\u2500\u2500 LOW IMPACT \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\nNo signals at this impact level.\n\n\u2500\u2500 EXECUTIVE TAKEAWAY \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\nWanzl's recent strategic moves in North America, including headquarters relocation and manufacturing expansion, suggest a focus on strengthening their position in the retail systems market. While these developments are geographically distant, they could signal increased competition in the self-checkout and retail kiosk segments where PARTTEAM operates. Leadership should monitor Wanzl's activities closely, particularly any shifts in their European strategy, to anticipate potential impacts on PARTTEAM's competitive positioning.",
+  "llm_calls_made": 5
+}
