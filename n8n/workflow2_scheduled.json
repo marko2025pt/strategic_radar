@@ -1,0 +1,566 @@
+{
+  "name": "Strategic Radar — Scheduled Weekly",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "weeks",
+              "triggerAtDay": [
+                1
+              ],
+              "triggerAtHour": 8
+            }
+          ]
+        }
+      },
+      "id": "6e941ab0-162b-47a5-a722-53a67c311d6d",
+      "name": "Every Monday 8am",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [
+        -448,
+        560
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "return [\n  { json: { company: 'Acrelec',         intelligence_type: 'Competitor Moves', time_range_days: 7 } },\n  { json: { company: 'Pyramid Computer', intelligence_type: 'Competitor Moves', time_range_days: 7 } },\n  { json: { company: 'Wanzl',            intelligence_type: 'Competitor Moves', time_range_days: 7 } },\n  { json: { company: 'Broadsign',        intelligence_type: 'Competitor Moves', time_range_days: 7 } },\n  { json: { company: 'Diebold Nixdorf',  intelligence_type: 'Competitor Moves', time_range_days: 7 } },\n  { json: { company: 'LamasaTech',       intelligence_type: 'Competitor Moves', time_range_days: 7 } }\n];"
+      },
+      "id": "2f877fc9-49c4-4fe3-a582-f80ee43c096d",
+      "name": "Competitor List",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -224,
+        560
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "d6a713bf-e19a-4dc6-adb0-3f82349bc5e6",
+      "name": "One at a Time",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        0,
+        560
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://strategicradar-production.up.railway.app/run",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "company",
+              "value": "={{ $json.company }}"
+            },
+            {
+              "name": "intelligence_type",
+              "value": "={{ $json.intelligence_type }}"
+            },
+            {
+              "name": "time_range_days",
+              "value": "={{ $json.time_range_days }}"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 120000
+        }
+      },
+      "id": "99aced0d-9539-4ab1-9ed8-cd3696afd8db",
+      "name": "Call Strategic Radar API",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        224,
+        608
+      ]
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "destinationFieldName": "results",
+        "options": {}
+      },
+      "id": "6338bc8e-8175-4aec-b73b-e0dfd0bb1200",
+      "name": "Collect All Briefs",
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        224,
+        416
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const aggregated = $input.first().json.results || [];\n\nconst date = new Date().toLocaleDateString('en-GB', { \n  weekday:'long', year:'numeric', month:'long', day:'numeric' \n});\n\nlet allSignalsHtml = '';\n\nfor (const data of aggregated) {\n  if (!data.competitor) continue;\n  const signals = data.signals || [];\n\n  const formatSignals = (level) => {\n    const group = signals.filter(s => s.impact_level === level);\n    if (!group.length) return '';\n    let out = `<h4 style=\"color:${level==='High'?'#c0392b':level==='Medium'?'#d17a00':'#2d8a4e'};margin:8px 0 6px\">${level} Impact</h4>`;\n    group.forEach(s => {\n      out += `<div style=\"border-left:3px solid ${level==='High'?'#c0392b':level==='Medium'?'#d17a00':'#2d8a4e'};padding:8px 12px;margin-bottom:8px;background:#fafafa\">`;\n      out += `<strong style=\"font-size:13px\">${s.title || ''}</strong>`;\n      if (s.url) out += ` <a href=\"${s.url}\" style=\"color:#666;font-size:11px\">[source]</a>`;\n      out += `<br/><span style=\"color:#555;font-size:12px\">${s.impact_summary || ''}</span>`;\n      if (s.confidence) out += `<span style=\"float:right;color:#999;font-size:11px\">${s.confidence}/10</span>`;\n      out += '</div>';\n    });\n    return out;\n  };\n\n  let takeaway = data.executive_takeaway || '';\n  if (takeaway.includes('── EXECUTIVE TAKEAWAY')) {\n    takeaway = takeaway.split('── EXECUTIVE TAKEAWAY')[1].replace(/─+/g,'').trim();\n  }\n\n  const high = signals.filter(s => s.impact_level === 'High').length;\n  const med  = signals.filter(s => s.impact_level === 'Medium').length;\n  const low  = signals.filter(s => s.impact_level === 'Low').length;\n\n  allSignalsHtml += `\n    <div style=\"margin-bottom:40px;border:1px solid #e4e7f0;border-radius:6px;overflow:hidden\">\n      <div style=\"background:#0f1117;color:white;padding:14px 20px\">\n        <strong style=\"font-size:16px\">${data.competitor}</strong>\n        <span style=\"color:rgba(255,255,255,0.5);font-size:12px;margin-left:12px\">${data.intelligence_type} · ${signals.length} signals · ${data.llm_calls_made || 0}/7 LLM calls</span>\n        <span style=\"float:right;font-size:11px;color:rgba(255,255,255,0.4)\">${data.elapsed_seconds || 0}s</span>\n      </div>\n      <div style=\"padding:8px 20px;background:#f7f8fc;border-bottom:1px solid #e4e7f0;display:flex;gap:20px\">\n        <span style=\"color:#c0392b;font-size:12px;font-weight:600\">${high} High</span>\n        <span style=\"color:#d17a00;font-size:12px;font-weight:600\">${med} Medium</span>\n        <span style=\"color:#2d8a4e;font-size:12px;font-weight:600\">${low} Low</span>\n      </div>\n      <div style=\"padding:16px 20px\">\n        ${formatSignals('High')}\n        ${formatSignals('Medium')}\n        ${formatSignals('Low')}\n        ${takeaway ? `\n          <div style=\"background:#0f1117;color:white;padding:12px 16px;border-radius:4px;margin-top:12px\">\n            <div style=\"font-size:10px;letter-spacing:0.1em;text-transform:uppercase;opacity:0.45;margin-bottom:4px\">Executive Takeaway</div>\n            <p style=\"margin:0;font-size:13px;line-height:1.6;opacity:0.9\">${takeaway}</p>\n          </div>` : ''}\n      </div>\n    </div>`;\n}\n\nconst html = `\n<!DOCTYPE html>\n<html>\n<head><meta charset=\"utf-8\"><style>\n  body { font-family: Georgia, serif; max-width: 700px; margin: 40px auto; color: #1a1a1a; }\n  h1 { font-size: 24px; border-bottom: 2px solid #1a1a1a; padding-bottom: 10px; }\n  .date { color: #666; font-size: 13px; margin-bottom: 32px; }\n</style></head>\n<body>\n  <h1>Strategic Radar — Weekly Intelligence Brief</h1>\n  <div class=\"date\">${date} · All Competitors · Competitor Moves</div>\n  ${allSignalsHtml}\n</body>\n</html>`;\n\nreturn [{ json: { html, subject: `Strategic Radar — Weekly Brief ${date}` } }];"
+      },
+      "id": "5e8db6bf-bea9-4e18-9017-08fd452ab415",
+      "name": "Format Combined Brief",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        448,
+        416
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "mail",
+        "fromEmail": "strategicradar2026@outlook.com",
+        "fromName": "Strategic Radar",
+        "toEmail": "mjoaquim@ipca.pt",
+        "subject": "={{ $json.subject }}",
+        "contentType": "text/html",
+        "contentValue": "={{ $json.html }}",
+        "additionalFields": {}
+      },
+      "id": "9cdbf776-ae7e-4534-8598-6b343aafbd5f",
+      "name": "Send Weekly Email",
+      "type": "n8n-nodes-base.sendGrid",
+      "typeVersion": 1,
+      "position": [
+        672,
+        416
+      ],
+      "credentials": {
+        "sendGridApi": {
+          "id": "WWjwaFqgPRNC3QFg",
+          "name": "SendGrid account"
+        }
+      }
+    }
+  ],
+  "pinData": {
+    "Collect All Briefs": [
+      {
+        "json": {
+          "results": [
+            {
+              "competitor": "Acrelec",
+              "intelligence_type": "Competitor Moves",
+              "time_range_days": 7,
+              "signals": [
+                {
+                  "title": "Acrelec News & Media - QSR Web",
+                  "url": "https://www.qsrweb.com/companies/acrelec-america/media/",
+                  "snippet": "January 6, 2023\n\nAcrelec, a manufacturer of customer experience software and hardware solutions, has teamed with XXII, a computer vision software publishing company, to provide…",
+                  "source": "QSR Web",
+                  "published_at": "2023-01-06",
+                  "source_type": "news",
+                  "api_origin": "tavily",
+                  "selection_reason": "This partnership with XXII highlights Acrelec's strategic move to enhance its technology offerings in computer vision, which is crucial for advancing its self-service kiosk solutions.",
+                  "impact_level": "High",
+                  "impact_summary": "Acrelec's partnership with XXII to enhance computer vision capabilities directly threatens PARTTEAM's competitive position in the QSR vertical. This move could accelerate Acrelec's penetration in the European mid-market, challenging PARTTEAM's growth objectives by setting higher technology standards that mid-size QSR chains may soon expect. The partnership also strengthens Acrelec's value proposition in AI-driven upsell and order accuracy, areas where PARTTEAM must remain competitive.",
+                  "strategic_link": "QSR growth objective and AI-driven personalisation and upsell at the kiosk",
+                  "rag_score": 0.6166,
+                  "confidence": 4.9
+                },
+                {
+                  "title": "GLORY Acquires Remaining Equity Shares in Acrelec Group",
+                  "url": "https://acrelec.com/glory-acquires-remaining-equity-shares-in-acrelec-group/",
+                  "snippet": "Acrelec is a global technology company focused on reinventing the customer experience for restaurant and retail brands. Leveraging decades of software, hardware and service expertise, the company develops and integrates new platforms that increase customer engagement, optimize efficiency and improve",
+                  "source": "Acrelec",
+                  "published_at": "",
+                  "source_type": "press release",
+                  "api_origin": "tavily",
+                  "selection_reason": "The acquisition by GLORY is a significant strategic development, indicating potential changes in Acrelec's business strategy and market positioning.",
+                  "impact_level": "High",
+                  "impact_summary": "The acquisition of Acrelec by GLORY could lead to increased investment and strategic focus on Acrelec's QSR and retail technology solutions, directly threatening PARTTEAM's market position in these verticals. Given Acrelec's existing capabilities in AI-driven upsell and their strong relationships with major QSR brands, this development could accelerate their market penetration, challenging PARTTEAM's growth objectives in the QSR sector.",
+                  "strategic_link": "QSR growth objective and AI-driven personalisation in kiosk software",
+                  "rag_score": 0.6488,
+                  "confidence": 5.1
+                }
+              ],
+              "executive_takeaway": "Strategic Snapshot — Acrelec (Last 7 Days)\n\n── HIGH IMPACT ──────────────────────────────────────\n• Acrelec News & Media - QSR Web — Confidence: 4.9/10\n  Impact: Acrelec's partnership with XXII enhances their computer vision capabilities, threatening PARTTEAM's position in the QSR vertical by setting higher technology standards.\n  Strategic Link: QSR growth objective and AI-driven personalisation and upsell at the kiosk\n  Source: https://www.qsrweb.com/companies/acrelec-america/media/\n\n• GLORY Acquires Remaining Equity Shares in Acrelec Group — Confidence: 5.1/10\n  Impact: GLORY's acquisition of Acrelec could lead to increased investment in QSR and retail technology solutions, challenging PARTTEAM's market position in these sectors.\n  Strategic Link: QSR growth objective and AI-driven personalisation in kiosk software\n  Source: https://acrelec.com/glory-acquires-remaining-equity-shares-in-acrelec-group/\n\n── MEDIUM IMPACT ────────────────────────────────────\nNo signals at this impact level.\n\n── LOW IMPACT ───────────────────────────────────────\nNo signals at this impact level.\n\n── EXECUTIVE TAKEAWAY ───────────────────────────────\nAcrelec's recent strategic moves, including a partnership to enhance AI capabilities and an acquisition by GLORY, pose significant threats to PARTTEAM's competitive position in the QSR sector. Leadership should prioritize strengthening PARTTEAM's AI-driven solutions and consider strategic partnerships to maintain market competitiveness. Additionally, monitoring Acrelec's integration with GLORY could provide insights into potential shifts in market dynamics that may require proactive strategic adjustments.",
+              "llm_calls_made": 4,
+              "elapsed_seconds": 31.7,
+              "generated_at": "2026-03-04T14:13:16.215430Z",
+              "notify_email": ""
+            },
+            {
+              "competitor": "Pyramid Computer",
+              "intelligence_type": "Competitor Moves",
+              "time_range_days": 7,
+              "signals": [
+                {
+                  "title": "EDEKA recognizes advantages of SCO and relies on PYRAMID",
+                  "url": "https://us.pyramid-computer.com/news/edeka-recognizes-advantages-of-sco-and-relies-on-pyramid/",
+                  "snippet": "Pyramid Computer embeddedworld 2026\n\n### February 25, 2026 EuroShop 2026: POLYTOUCH® PASSPORT self-service terminal celebrates 10 years of success on the kiosk market\n\nEUROSHOP 2026: Happy birthday PASSPORT\n\n### February 24, 2026 EuroShop 2026: POLYTOUCH® – Multimodular self-checkout for maximum fle",
+                  "source": "",
+                  "published_at": "",
+                  "source_type": "",
+                  "api_origin": "tavily",
+                  "selection_reason": "This signal highlights a strategic partnership with EDEKA, showcasing Pyramid's influence and success in the self-service kiosk market.",
+                  "impact_level": "Medium",
+                  "impact_summary": "Pyramid Computer's strategic partnership with EDEKA and the success of their POLYTOUCH® PASSPORT self-service terminal highlight their strong presence in the retail self-service kiosk market. While this does not directly threaten PARTTEAM's core objectives, it underscores Pyramid's influence in a key vertical where PARTTEAM is also active, warranting monitoring of their activities and potential market shifts.",
+                  "strategic_link": "Core Hardware Products",
+                  "rag_score": 0.5493,
+                  "confidence": 4.5
+                },
+                {
+                  "title": "Pyramid Data Breach Claims Investigated by Lynch Carpenter",
+                  "url": "https://www.globenewswire.com/news-release/2026/03/02/3247768/0/en/Pyramid-Data-Breach-Claims-Investigated-by-Lynch-Carpenter.html",
+                  "snippet": "Accessibility: Skip TopNav\n\n# Pyramid Data Breach Claims Investigated by Lynch Carpenter\n\n | Source:  Lynch Carpenter     Lynch Carpenter\n\nPITTSBURGH, March 02, 2026 (GLOBE NEWSWIRE) -- Pyramid Advisors Limited Partnership, doing business as Pyramid Global Hospitality (“Pyramid”), a company that man",
+                  "source": "Lynch Carpenter",
+                  "published_at": "2026-03-02",
+                  "source_type": "news",
+                  "api_origin": "tavily",
+                  "selection_reason": "The investigation into a data breach could have significant implications for Pyramid's reputation and operational security in the digital kiosk industry.",
+                  "impact_level": "Medium",
+                  "impact_summary": "The data breach investigation into Pyramid Computer could affect their reputation and operational security, potentially impacting their competitive position in the digital kiosk industry. As Pyramid is a direct competitor in key verticals such as retail and public services, this situation is worth monitoring for any shifts in customer trust or market opportunities that may arise for PARTTEAM.",
+                  "strategic_link": "Competitive Positioning and Market Opportunities in Retail and Public Services",
+                  "rag_score": 0.4871,
+                  "confidence": 4.1
+                }
+              ],
+              "executive_takeaway": "Strategic Snapshot — Pyramid Computer (Last 7 Days)\n\n── HIGH IMPACT ──────────────────────────────────────\nNo signals at this impact level.\n\n── MEDIUM IMPACT ────────────────────────────────────\n• EDEKA recognizes advantages of SCO and relies on PYRAMID — Confidence: 4.5/10\n  Impact: Pyramid's partnership with EDEKA highlights their strong presence in the retail self-service kiosk market, a key vertical for PARTTEAM.\n  Strategic Link: Core Hardware Products\n  Source: https://us.pyramid-computer.com/news/edeka-recognizes-advantages-of-sco-and-relies-on-pyramid/\n\n• Pyramid Data Breach Claims Investigated by Lynch Carpenter — Confidence: 4.1/10\n  Impact: The data breach investigation could affect Pyramid's reputation and operational security, impacting their competitive position in the digital kiosk industry.\n  Strategic Link: Competitive Positioning and Market Opportunities in Retail and Public Services\n  Source: https://www.globenewswire.com/news-release/2026/03/02/3247768/0/en/Pyramid-Data-Breach-Claims-Investigated-by-Lynch-Carpenter.html\n\n── LOW IMPACT ───────────────────────────────────────\nNo signals at this impact level.\n\n── EXECUTIVE TAKEAWAY ───────────────────────────────\nPyramid Computer's recent activities indicate both opportunities and threats. Their partnership with EDEKA solidifies their position in the retail self-service market, suggesting a need for PARTTEAM to enhance its competitive strategies in this sector. Simultaneously, the data breach investigation presents a potential vulnerability for Pyramid, offering PARTTEAM a chance to capitalize on any resulting market shifts or customer trust issues. Leadership should focus on strengthening market presence and exploring new opportunities in light of these developments.",
+              "llm_calls_made": 4,
+              "elapsed_seconds": 26.7,
+              "generated_at": "2026-03-04T14:13:43.413041Z",
+              "notify_email": ""
+            },
+            {
+              "competitor": "Wanzl",
+              "intelligence_type": "Competitor Moves",
+              "time_range_days": 7,
+              "signals": [
+                {
+                  "title": "Wanzl Announces Expansion and Investment in Catawba County",
+                  "url": "https://www.catawbaedc.org/news/wanzl-expansion-Nov-2023",
+                  "snippet": "The renovation will not only enhance the company's manufacturing capabilities but also significantly upgrade the facility's employee amenities, including a new, redesigned cafeteria and lounge. This investment underscores Wanzl's commitment to innovation, growth, and its employees in the region.",
+                  "source": "Catawba EDC",
+                  "published_at": "2023-11-14",
+                  "source_type": "News",
+                  "api_origin": "tavily",
+                  "selection_reason": "This signal highlights Wanzl's strategic investment in manufacturing capabilities, indicating growth and commitment to innovation in the region.",
+                  "impact_level": "Medium",
+                  "impact_summary": "Wanzl's expansion and investment in Catawba County enhances their manufacturing capabilities and employee amenities, indicating a commitment to growth and innovation. This move is indirectly relevant to PARTTEAM & OEMKIOSKS as it may strengthen Wanzl's position in the retail systems and self-checkout market, which overlaps with PARTTEAM's SELFCASHY and YSCO Market product line. Monitoring Wanzl's developments is advisable to assess potential competitive pressures in the European retail vertical.",
+                  "strategic_link": "Retail vertical strategy and competitive positioning in self-checkout and retail kiosk markets",
+                  "rag_score": 0.4878,
+                  "confidence": 4.1
+                },
+                {
+                  "title": "Lincoln Economic Development Association Celebrates Wanzl ...",
+                  "url": "https://lincolneda.org/press-release-lincoln-economic-development-association-celebrates-wanzl-north-americas-expansion-to-denver-nc/",
+                  "snippet": "The Lincoln Economic Development Association (LEDA) announced the news of Wanzl North America’s relocation of its headquarters to Denver, NC on Monday, in its November 6th’s meeting of the Board of Commissioners. This strategic move marks a significant step in Wanzl’s expansion plans, supported by i",
+                  "source": "Lincoln EDA",
+                  "published_at": "2023-11-06",
+                  "source_type": "Press Release",
+                  "api_origin": "tavily",
+                  "selection_reason": "Relocating the headquarters to Denver, NC is a strategic move that supports Wanzl's expansion plans in North America.",
+                  "impact_level": "Medium",
+                  "impact_summary": "Wanzl's relocation of its North American headquarters to Denver, NC indicates a strategic expansion in a key market. While this move does not directly impact PARTTEAM's current geographic focus, it suggests Wanzl's strengthening presence in North America, which could influence competitive dynamics in the retail systems and self-checkout sectors globally.",
+                  "strategic_link": "Objective 6 — OEM/ODM Partner Network Growth",
+                  "rag_score": 0.4337,
+                  "confidence": 3.8
+                },
+                {
+                  "title": "Wanzl North America opens Corporate Center in Denver",
+                  "url": "https://www.wanzl.com/en_US/company/press-and-news/wanzl-north-america-opens-corporate-center-in-denver~n7406",
+                  "snippet": "About Wanzl North America Wanzl North America (formerly Technibilt Ltd), located in Denver, North Carolina, is a leading B2B solution provider for Retailers. Founded in 1946 and acquired by Wanzl GmbH & Co. KGaA in 2012, Wanzl North America is the leading manufacturer of shopping carts, and partners",
+                  "source": "Wanzl",
+                  "published_at": "2023-11-14",
+                  "source_type": "Company News",
+                  "api_origin": "tavily",
+                  "selection_reason": "The opening of a new corporate center in Denver signifies Wanzl's commitment to strengthening its presence and operational capabilities in North America.",
+                  "impact_level": "Medium",
+                  "impact_summary": "Wanzl's opening of a new corporate center in Denver indicates their commitment to expanding their operational capabilities in North America. While this move does not directly impact PARTTEAM's primary markets in Europe and the Middle East, it is worth monitoring as it reflects Wanzl's overall growth strategy, which could eventually influence their activities in Europe where they compete directly with PARTTEAM in the retail kiosk and self-checkout segments.",
+                  "strategic_link": "Retail vertical strategy and competitive monitoring in self-checkout and retail kiosk deployments",
+                  "rag_score": 0.5621,
+                  "confidence": 4.6
+                }
+              ],
+              "executive_takeaway": "Strategic Snapshot — Wanzl (Last 7 Days)\n\n── HIGH IMPACT ──────────────────────────────────────\nNo signals at this impact level.\n\n── MEDIUM IMPACT ────────────────────────────────────\n• Wanzl Announces Expansion and Investment in Catawba County — Confidence: 4.1/10  \n  Impact: Wanzl's expansion in Catawba County enhances manufacturing capabilities, potentially strengthening their position in the retail systems and self-checkout market.  \n  Strategic Link: Retail vertical strategy and competitive positioning in self-checkout and retail kiosk markets  \n  Source: [https://www.catawbaedc.org/news/wanzl-expansion-Nov-2023](https://www.catawbaedc.org/news/wanzl-expansion-Nov-2023)\n\n• Lincoln Economic Development Association Celebrates Wanzl ... — Confidence: 3.8/10  \n  Impact: Wanzl's relocation of its North American headquarters to Denver, NC suggests a strategic expansion in a key market, potentially influencing global competitive dynamics.  \n  Strategic Link: Objective 6 — OEM/ODM Partner Network Growth  \n  Source: [https://lincolneda.org/press-release-lincoln-economic-development-association-celebrates-wanzl-north-americas-expansion-to-denver-nc/](https://lincolneda.org/press-release-lincoln-economic-development-association-celebrates-wanzl-north-americas-expansion-to-denver-nc/)\n\n• Wanzl North America opens Corporate Center in Denver — Confidence: 4.6/10  \n  Impact: The new corporate center in Denver reflects Wanzl's growth strategy, which could eventually impact their competitive activities in Europe.  \n  Strategic Link: Retail vertical strategy and competitive monitoring in self-checkout and retail kiosk deployments  \n  Source: [https://www.wanzl.com/en_US/company/press-and-news/wanzl-north-america-opens-corporate-center-in-denver~n7406](https://www.wanzl.com/en_US/company/press-and-news/wanzl-north-america-opens-corporate-center-in-denver~n7406)\n\n── LOW IMPACT ───────────────────────────────────────\nNo signals at this impact level.\n\n── EXECUTIVE TAKEAWAY ───────────────────────────────\nWanzl's recent strategic moves in North America, including expansions and relocations, indicate a robust growth strategy that could eventually influence their competitive stance in Europe. PARTTEAM & OEMKIOSKS should closely monitor these developments to anticipate potential shifts in competitive pressures, particularly in the retail systems and self-checkout markets. Proactive adjustments in strategic planning and market positioning may be necessary to maintain competitive advantage.",
+              "llm_calls_made": 5,
+              "elapsed_seconds": 30.1,
+              "generated_at": "2026-03-04T14:14:13.824321Z",
+              "notify_email": ""
+            },
+            {
+              "competitor": "Broadsign",
+              "intelligence_type": "Competitor Moves",
+              "time_range_days": 7,
+              "signals": [
+                {
+                  "title": "Broadsign Accelerates APAC Expansion with Four Strategic ...",
+                  "url": "https://broadsign.com/blog/broadsign-accelerates-apac-expansion-with-four-strategic-appointments/",
+                  "snippet": "Key hires underscore company’s ambitious growth trajectory and commitment to regional market leadership",
+                  "source": "Broadsign",
+                  "published_at": "February 25, 2026",
+                  "source_type": "Company Blog",
+                  "api_origin": "tavily",
+                  "selection_reason": "This signal highlights Broadsign's strategic focus on expanding its presence in the APAC region, which is crucial for capturing market share in a rapidly growing market.",
+                  "impact_level": "Low",
+                  "impact_summary": "Broadsign's expansion in the APAC region does not directly affect PARTTEAM & OEMKIOSKS' current strategic objectives, which focus on Europe and the Middle East. While Broadsign's growth could indicate broader industry trends, it does not pose an immediate threat to PARTTEAM's target markets or business areas.",
+                  "strategic_link": "Objective 1 — International Expansion",
+                  "rag_score": 0.5305,
+                  "confidence": 4.4
+                },
+                {
+                  "title": "Broadsign Announces Four New Appointments – rAVe [PUBS]",
+                  "url": "https://ravepubs.com/broadsign-new-appointments/",
+                  "snippet": "Alec Jeffrey joined Broadsign in early 2026 from B2B publisher Octomedia. In his new role as Sales Executive, Jeffery will be responsible for driving the adoption of Broadsign’s recently revolutionised platform amongst OOH media owners and retailers.",
+                  "source": "rAVe [PUBS]",
+                  "published_at": "2026",
+                  "source_type": "Industry Publication",
+                  "api_origin": "tavily",
+                  "selection_reason": "The appointment of new executives to drive platform adoption indicates Broadsign's strategic push to enhance its market penetration and influence in the OOH sector.",
+                  "impact_level": "Medium",
+                  "impact_summary": "Broadsign's appointment of new executives to drive platform adoption suggests a strategic push to enhance its influence in the OOH sector, which could indirectly affect PARTTEAM's market position. This move indicates Broadsign's intent to strengthen its market penetration, potentially increasing competition in the DOOH software space where PARTTEAM also operates.",
+                  "strategic_link": "Programmatic DOOH and DSP Integration",
+                  "rag_score": 0.597,
+                  "confidence": 4.8
+                }
+              ],
+              "executive_takeaway": "Strategic Snapshot — Broadsign (Last 7 Days)\n\n── HIGH IMPACT ──────────────────────────────────────\nNo signals at this impact level.\n\n── MEDIUM IMPACT ────────────────────────────────────\n• Broadsign Announces Four New Appointments — Confidence: 4.8/10  \n  Impact: Broadsign's appointment of new executives to drive platform adoption suggests a strategic push to enhance its influence in the OOH sector, potentially increasing competition in the DOOH software space where PARTTEAM also operates.  \n  Strategic Link: Programmatic DOOH and DSP Integration  \n  Source: [https://ravepubs.com/broadsign-new-appointments/](https://ravepubs.com/broadsign-new-appointments/)\n\n── LOW IMPACT ───────────────────────────────────────\n• Broadsign Accelerates APAC Expansion with Four Strategic ... — Confidence: 4.4/10  \n  Impact: Broadsign's expansion in the APAC region does not directly affect PARTTEAM & OEMKIOSKS' current strategic objectives, which focus on Europe and the Middle East.  \n  Strategic Link: Objective 1 — International Expansion  \n  Source: [https://broadsign.com/blog/broadsign-accelerates-apac-expansion-with-four-strategic-appointments/](https://broadsign.com/blog/broadsign-accelerates-apac-expansion-with-four-strategic-appointments/)\n\n── EXECUTIVE TAKEAWAY ───────────────────────────────\nBroadsign's recent executive appointments signal a strategic effort to bolster its presence in the OOH sector, which could heighten competition in the DOOH software market. PARTTEAM should monitor these developments closely and consider reinforcing its own market strategies to maintain competitive advantage. While Broadsign's APAC expansion is not an immediate concern, it may reflect broader industry trends worth observing.",
+              "llm_calls_made": 4,
+              "elapsed_seconds": 21.7,
+              "generated_at": "2026-03-04T14:14:35.746809Z",
+              "notify_email": ""
+            },
+            {
+              "competitor": "Diebold Nixdorf",
+              "intelligence_type": "Competitor Moves",
+              "time_range_days": 7,
+              "signals": [
+                {
+                  "title": "Diebold Nixdorf Announces New Growth Acceleration Plan and ...",
+                  "url": "https://www.prnewswire.com/news-releases/diebold-nixdorf-announces-new-growth-acceleration-plan-and-three-year-financial-targets-at-2025-investor-day-302385670.html",
+                  "snippet": "NORTH CANTON, Ohio, Feb. 26, 2025 /PRNewswire/ -- Diebold Nixdorf (NYSE: DBD), a world leader in transforming the way people bank and shop, will host its 2025 Investor Day today, starting at 9:00 a.m. ET, in New York City. The event will cover the company's continued progress with its strategic grow",
+                  "source": "PR Newswire",
+                  "published_at": "2025-02-26",
+                  "source_type": "Press Release",
+                  "api_origin": "tavily",
+                  "selection_reason": "The announcement of a new growth acceleration plan and financial targets is crucial for understanding Diebold Nixdorf's strategic direction and market positioning.",
+                  "impact_level": "Medium",
+                  "impact_summary": "Diebold Nixdorf's announcement of a new growth acceleration plan is indirectly relevant to PARTTEAM & OEMKIOSKS as it may influence their strategic direction in key verticals like banking and retail self-service, where both companies compete. Monitoring their progress could provide insights into potential shifts in market dynamics and competitive positioning, especially in Europe where both companies are active.",
+                  "strategic_link": "Smart Cities and Public Procurement",
+                  "rag_score": 0.602,
+                  "confidence": 4.8
+                },
+                {
+                  "title": "Diebold Nixdorf Announces New Growth Acceleration Plan and ...",
+                  "url": "https://investors.dieboldnixdorf.com/news-and-events/press-releases/news-details/2025/Diebold-Nixdorf-Announces-New-Growth-Acceleration-Plan-and-Three-Year-Financial-Targets-at-2025-Investor-Day/default.aspx",
+                  "snippet": "The company's senior management team will present its strategy to drive sustainable and profitable growth in its global banking and retail markets, increasing cash conversion and delivering significant shareholder returns. [...] views of the Company with respect to future events and are subject to a",
+                  "source": "Diebold Nixdorf Investor Relations",
+                  "published_at": "2025-02-26",
+                  "source_type": "Company Press Release",
+                  "api_origin": "tavily",
+                  "selection_reason": "This signal provides insight into Diebold Nixdorf's strategic focus on sustainable growth and profitability, which is vital for stakeholders.",
+                  "impact_level": "Medium",
+                  "impact_summary": "Diebold Nixdorf's new growth acceleration plan focuses on sustainable and profitable growth in banking and retail markets, which are key areas where PARTTEAM & OEMKIOSKS also competes. While the signal does not directly threaten PARTTEAM's strategic objectives, it indicates a potential increase in competitive pressure in shared markets, particularly in Europe where both companies bid on public procurement contracts.",
+                  "strategic_link": "International Expansion",
+                  "rag_score": 0.5564,
+                  "confidence": 4.5
+                },
+                {
+                  "title": "Drugstore chain Rossmann taps Diebold Nixdorf for expansion",
+                  "url": "https://www.retailcustomerexperience.com/news/drugstore-chain-rossmann-taps-diebold-nixdorf-for-expansion/",
+                  "snippet": "A recent expansion of the collaboration –encompassing the entire German store hardware infrastructure and additional services, including software installation and inventory management — created the successful blueprint in Switzerland that will serve as a basis for future expansion in other European",
+                  "source": "Retail Customer Experience",
+                  "published_at": "2025-02-20",
+                  "source_type": "News",
+                  "api_origin": "tavily",
+                  "selection_reason": "The expansion with Rossmann highlights Diebold Nixdorf's role in supporting major retail infrastructure projects, indicating its influence in the European market.",
+                  "impact_level": "Medium",
+                  "impact_summary": "Diebold Nixdorf's expansion with Rossmann in the retail sector highlights their growing influence in European retail infrastructure, which could indirectly affect PARTTEAM's market position in retail self-service solutions. While Diebold Nixdorf primarily focuses on banking and transport, their involvement in retail projects could lead to increased competition in the retail vertical, particularly in self-service and kiosk deployments.",
+                  "strategic_link": "Retail Vertical Strategy",
+                  "rag_score": 0.5529,
+                  "confidence": 4.5
+                },
+                {
+                  "title": "Tranche Update on Diebold Nixdorf, Incorporated's Equity Buyback ...",
+                  "url": "https://www.marketscreener.com/news/tranche-update-on-diebold-nixdorf-incorporated-s-equity-buyback-plan-announced-on-february-12-2025-ce7e5dd8de81f420",
+                  "snippet": "| Dec. 16 | Diebold Nixdorf Says it Expands its Partnership With Autogrill in Italy | MT | | Dec. 16 | Diebold Nixdorf Boosts Operational Continuity of Autogrill Restaurants in Italy | CI |",
+                  "source": "Market Screener",
+                  "published_at": "2025-02-12",
+                  "source_type": "Financial News",
+                  "api_origin": "tavily",
+                  "selection_reason": "The expansion of the partnership with Autogrill in Italy demonstrates Diebold Nixdorf's strategic moves to enhance operational continuity and market presence in the hospitality sector.",
+                  "impact_level": "Medium",
+                  "impact_summary": "The expansion of Diebold Nixdorf's partnership with Autogrill in Italy indicates their strategic focus on enhancing operational continuity in the hospitality sector. While this move does not directly threaten PARTTEAM's core objectives, it is worth monitoring as it reflects Diebold Nixdorf's growing presence in a sector that could overlap with PARTTEAM's interests in transport and public procurement kiosks.",
+                  "strategic_link": "Smart Cities and Public Procurement",
+                  "rag_score": 0.5823,
+                  "confidence": 4.7
+                }
+              ],
+              "executive_takeaway": "Strategic Snapshot — Diebold Nixdorf (Last 7 Days)\n\n── HIGH IMPACT ──────────────────────────────────────\nNo signals at this impact level.\n\n── MEDIUM IMPACT ────────────────────────────────────\n• Diebold Nixdorf Announces New Growth Acceleration Plan — Confidence: 4.8/10  \n  Impact: Diebold Nixdorf's new plan may influence strategic directions in banking and retail self-service, impacting market dynamics in Europe.  \n  Strategic Link: Smart Cities and Public Procurement  \n  Source: [prnewswire.com](https://www.prnewswire.com/news-releases/diebold-nixdorf-announces-new-growth-acceleration-plan-and-three-year-financial-targets-at-2025-investor-day-302385670.html)\n\n• Diebold Nixdorf Announces New Growth Acceleration Plan — Confidence: 4.5/10  \n  Impact: The plan suggests potential competitive pressure in shared markets, particularly in Europe.  \n  Strategic Link: International Expansion  \n  Source: [investors.dieboldnixdorf.com](https://investors.dieboldnixdorf.com/news-and-events/press-releases/news-details/2025/Diebold-Nixdorf-Announces-New-Growth-Acceleration-Plan-and-Three-Year-Financial-Targets-at-2025-Investor-Day/default.aspx)\n\n• Drugstore chain Rossmann taps Diebold Nixdorf for expansion — Confidence: 4.5/10  \n  Impact: Diebold Nixdorf's retail expansion could increase competition in the retail self-service solutions market.  \n  Strategic Link: Retail Vertical Strategy  \n  Source: [retailcustomerexperience.com](https://www.retailcustomerexperience.com/news/drugstore-chain-rossmann-taps-diebold-nixdorf-for-expansion/)\n\n• Tranche Update on Diebold Nixdorf, Incorporated's Equity Buyback — Confidence: 4.7/10  \n  Impact: Diebold Nixdorf's partnership with Autogrill in Italy reflects a strategic focus that could overlap with PARTTEAM's interests.  \n  Strategic Link: Smart Cities and Public Procurement  \n  Source: [marketscreener.com](https://www.marketscreener.com/news/tranche-update-on-diebold-nixdorf-incorporated-s-equity-buyback-plan-announced-on-february-12-2025-ce7e5dd8de81f420)\n\n── LOW IMPACT ───────────────────────────────────────\nNo signals at this impact level.\n\n── EXECUTIVE TAKEAWAY ───────────────────────────────\nDiebold Nixdorf's recent strategic moves, particularly their growth acceleration plan and retail sector expansion, suggest an increase in competitive pressure in key markets where PARTTEAM & OEMKIOSKS operates. Leadership should closely monitor Diebold Nixdorf's activities in Europe, especially in the banking, retail, and public procurement sectors, to anticipate shifts in market dynamics and adjust strategies accordingly. Proactive engagement in these verticals and potential partnerships could mitigate competitive risks.",
+              "llm_calls_made": 6,
+              "elapsed_seconds": 35.7,
+              "generated_at": "2026-03-04T14:15:11.924630Z",
+              "notify_email": ""
+            },
+            {
+              "competitor": "LamasaTech",
+              "intelligence_type": "Competitor Moves",
+              "time_range_days": 7,
+              "signals": [
+                {
+                  "title": "Blog - LamasaTech",
+                  "url": "https://www.lamasatech.com/blog/",
+                  "snippet": "North East tech pioneer’s digital signage network surpasses 2,000 screens in UK retail LamasaTech, a leading specialist in kiosks, digital signage and touch screens, has secured a major contract with Co-op’s Retail Media Network, marking another milestone in the company’s expansion across the UK ret",
+                  "source": "",
+                  "published_at": "",
+                  "source_type": "blog",
+                  "api_origin": "tavily",
+                  "selection_reason": "This signal highlights a major contract secured by LamasaTech, indicating significant market expansion in the UK retail sector.",
+                  "impact_level": "High",
+                  "impact_summary": "LamasaTech's major contract with Co-op’s Retail Media Network in the UK represents a significant expansion in a key market where PARTTEAM & OEMKIOSKS also operates. This move could influence competitive dynamics in the retail sector, a shared vertical, and may affect PARTTEAM's market share and pricing strategies in Europe. Monitoring LamasaTech's growth and strategic partnerships is crucial for maintaining competitive positioning.",
+                  "strategic_link": "International Expansion and Competitive Positioning in Retail Sector",
+                  "rag_score": 0.5703,
+                  "confidence": 4.6
+                },
+                {
+                  "title": "$35+ Bn Interactive Kiosk Market - Global Forecast to 2030",
+                  "url": "https://finance.yahoo.com/news/35-bn-interactive-kiosk-market-142500039.html",
+                  "snippet": "Case Studies\n\n Diebold Nixdorf and Dave & Buster's Partner to Elevate Guest Experiences Using Interactive Kiosks\n Pyramid Computer Enables Digital Self-Service Transformation for De Digitale Retail Stores\n Advantech-Aures Delivers Self-Service Kiosks for Hosho Budget-Accommodation Concept\n Pyramid C",
+                  "source": "Yahoo Finance",
+                  "published_at": "",
+                  "source_type": "news",
+                  "api_origin": "tavily",
+                  "selection_reason": "This market forecast provides insights into the growth and trends in the interactive kiosk market, which is crucial for strategic planning in the DOOH and self-service kiosk industry.",
+                  "impact_level": "Medium",
+                  "impact_summary": "The forecast of a $35+ billion interactive kiosk market by 2030 indicates significant growth potential in the industry, which aligns with PARTTEAM & OEMKIOSKS' core business in self-service kiosks and digital signage. While the signal highlights competitors' activities, it does not directly threaten PARTTEAM's strategic objectives but suggests a growing market that could offer new opportunities for expansion and innovation.",
+                  "strategic_link": "Core Hardware Products",
+                  "rag_score": 0.6156,
+                  "confidence": 4.9
+                }
+              ],
+              "executive_takeaway": "Strategic Snapshot — LamasaTech (Last 7 Days)\n\n── HIGH IMPACT ──────────────────────────────────────\n• Blog - LamasaTech — Confidence: 4.6/10\n  Impact: LamasaTech's major contract with Co-op’s Retail Media Network in the UK represents a significant expansion in a key market where PARTTEAM & OEMKIOSKS also operates. This move could influence competitive dynamics in the retail sector, a shared vertical, and may affect PARTTEAM's market share and pricing strategies in Europe. Monitoring LamasaTech's growth and strategic partnerships is crucial for maintaining competitive positioning.\n  Strategic Link: International Expansion and Competitive Positioning in Retail Sector\n  Source: https://www.lamasatech.com/blog/\n\n── MEDIUM IMPACT ────────────────────────────────────\n• $35+ Bn Interactive Kiosk Market - Global Forecast to 2030 — Confidence: 4.9/10\n  Impact: The forecast of a $35+ billion interactive kiosk market by 2030 indicates significant growth potential in the industry, which aligns with PARTTEAM & OEMKIOSKS' core business in self-service kiosks and digital signage. While the signal highlights competitors' activities, it does not directly threaten PARTTEAM's strategic objectives but suggests a growing market that could offer new opportunities for expansion and innovation.\n  Strategic Link: Core Hardware Products\n  Source: https://finance.yahoo.com/news/35-bn-interactive-kiosk-market-142500039.html\n\n── LOW IMPACT ───────────────────────────────────────\nNo signals at this impact level.\n\n── EXECUTIVE TAKEAWAY ───────────────────────────────\nLamasaTech's strategic expansion into the UK retail sector through a significant contract could alter competitive dynamics, necessitating a review of PARTTEAM's market strategies in Europe. The projected growth of the interactive kiosk market presents an opportunity for PARTTEAM to innovate and expand its offerings. Leadership should focus on strengthening competitive positioning in shared markets and exploring new growth avenues in the expanding kiosk industry.",
+              "llm_calls_made": 4,
+              "elapsed_seconds": 18.5,
+              "generated_at": "2026-03-04T14:15:30.872056Z",
+              "notify_email": ""
+            }
+          ]
+        },
+        "pairedItem": [
+          {
+            "item": 0
+          },
+          {
+            "item": 1
+          },
+          {
+            "item": 2
+          },
+          {
+            "item": 3
+          },
+          {
+            "item": 4
+          },
+          {
+            "item": 5
+          }
+        ]
+      }
+    ]
+  },
+  "connections": {
+    "Every Monday 8am": {
+      "main": [
+        [
+          {
+            "node": "Competitor List",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Competitor List": {
+      "main": [
+        [
+          {
+            "node": "One at a Time",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "One at a Time": {
+      "main": [
+        [
+          {
+            "node": "Collect All Briefs",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Call Strategic Radar API",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call Strategic Radar API": {
+      "main": [
+        [
+          {
+            "node": "One at a Time",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Collect All Briefs": {
+      "main": [
+        [
+          {
+            "node": "Format Combined Brief",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Combined Brief": {
+      "main": [
+        [
+          {
+            "node": "Send Weekly Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "19da8449-65e4-48fc-8008-6103323b4e7c",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "49591d02494445711df4c9eb61cbc6b4506af3e5317f30444de34d635268eb0d"
+  },
+  "id": "xzQjLD9WNUaGcK97",
+  "tags": []
+}
