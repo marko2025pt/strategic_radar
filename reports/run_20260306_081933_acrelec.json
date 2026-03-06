@@ -1,0 +1,50 @@
+{
+  "run_id": "run_20260306_081933_acrelec",
+  "subject": "Acrelec",
+  "intelligence_type": "Competitor Moves",
+  "time_range_days": 7,
+  "signals": [
+    {
+      "title": "GLORY Acquires Remaining Equity Shares in Acrelec Group",
+      "url": "https://acrelec.com/glory-acquires-remaining-equity-shares-in-acrelec-group/",
+      "snippet": "Acrelec is a global technology company focused on reinventing the customer experience for restaurant and retail brands. Leveraging decades of software, hardware and service expertise, the company develops and integrates new platforms that increase customer engagement, optimize efficiency and improve",
+      "source": "",
+      "published_at": "",
+      "source_type": "tavily",
+      "api_origin": "tavily",
+      "selection_reason": "This signal is strategically relevant as it highlights a significant corporate acquisition, which could impact Acrelec's strategic direction and market positioning in the DOOH and self-service kiosk industry.",
+      "impact_level": "High",
+      "impact_summary": "The acquisition of Acrelec by Glory Ltd solidifies Acrelec's financial backing and market position, posing a direct threat to PARTTEAM's QSR growth objectives. Acrelec's enhanced capabilities in AI-driven upsell and customer engagement could accelerate their penetration in the European mid-market, challenging PARTTEAM's competitiveness in the QSR vertical.",
+      "strategic_link": "QSR growth objective and YSnack software competitiveness",
+      "relevance_score": 9,
+      "rag_score": 0.6488,
+      "confidence": 7.0
+    },
+    {
+      "title": "Acrelec Group Announces Executive Leadership Change",
+      "url": "https://www.businesswire.com/news/home/20260105917440/en/Acrelec-Group-Announces-Executive-Leadership-Change",
+      "snippet": "Toshimitsu Yoshinari, CEO of Glory Global Solutions, Acrelec’s parent company, shared his support for the transition: “I want to extend my heartfelt gratitude to Jacques for his unwavering commitment and boundless energy in shaping Acrelec’s journey from a small start-up to a global leader in Quick",
+      "source": "",
+      "published_at": "",
+      "source_type": "tavily",
+      "api_origin": "tavily",
+      "selection_reason": "This signal is important as it discusses a leadership change at Acrelec, which could influence the company's strategic decisions and future developments in the DOOH and self-service kiosk sectors.",
+      "impact_level": "Medium",
+      "impact_summary": "The executive leadership change at Acrelec may influence their strategic direction and operational focus, potentially affecting their competitive positioning in the QSR vertical. While this does not immediately alter the competitive landscape, it is important to monitor for any shifts in strategy that could impact PARTTEAM's market share or growth objectives.",
+      "strategic_link": "Objective 4 — Software and Recurring Revenue Growth",
+      "relevance_score": 6,
+      "rag_score": 0.5184,
+      "confidence": 5.2
+    }
+  ],
+  "tenders": [],
+  "private_opportunities": [],
+  "pretender_opportunities": [],
+  "executive_takeaway": "The acquisition of Acrelec by Glory Ltd significantly strengthens Acrelec's market position, directly challenging PARTTEAM's objectives in the QSR sector. Immediate strategic adjustments may be necessary to counteract Acrelec's enhanced capabilities in AI-driven customer engagement. Additionally, keep a close watch on Acrelec's new leadership for any strategic shifts that could further impact PARTTEAM's market share. Consider bolstering partnerships and innovation in AI to maintain competitive advantage.",
+  "final_brief": "Strategic Snapshot — Acrelec (Last 7 Days)\n\n── HIGH IMPACT ──────────────────────────────────────\n• GLORY Acquires Remaining Equity Shares in Acrelec Group — Confidence: 7.0/10 / Impact: The acquisition of Acrelec by Glory Ltd solidifies Acrelec's financial backing and market position, posing a direct threat to PARTTEAM's QSR growth objectives. Acrelec's enhanced capabilities in AI-driven upsell and customer engagement could accelerate their penetration in the European mid-market, challenging PARTTEAM's competitiveness in the QSR vertical. / Strategic Link: QSR growth objective and YSnack software competitiveness / Source: https://acrelec.com/glory-acquires-remaining-equity-shares-in-acrelec-group/\n\n── MEDIUM IMPACT ────────────────────────────────────\n• Acrelec Group Announces Executive Leadership Change — Confidence: 5.2/10 / Impact: The executive leadership change at Acrelec may influence their strategic direction and operational focus, potentially affecting their competitive positioning in the QSR vertical. While this does not immediately alter the competitive landscape, it is important to monitor for any shifts in strategy that could impact PARTTEAM's market share or growth objectives. / Strategic Link: Objective 4 — Software and Recurring Revenue Growth / Source: https://www.businesswire.com/news/home/20260105917440/en/Acrelec-Group-Announces-Executive-Leadership-Change\n\n── LOW IMPACT ───────────────────────────────────────\nNo signals at this impact level.\n\n── EXECUTIVE TAKEAWAY ───────────────────────────────\nThe acquisition of Acrelec by Glory Ltd significantly strengthens Acrelec's market position, directly challenging PARTTEAM's objectives in the QSR sector. Immediate strategic adjustments may be necessary to counteract Acrelec's enhanced capabilities in AI-driven customer engagement. Additionally, keep a close watch on Acrelec's new leadership for any strategic shifts that could further impact PARTTEAM's market share. Consider bolstering partnerships and innovation in AI to maintain competitive advantage.",
+  "llm_calls_made": 4,
+  "elapsed_seconds": null,
+  "generated_at": "2026-03-06T08:20:30.993527+00:00",
+  "notify_email": "",
+  "error": null
+}

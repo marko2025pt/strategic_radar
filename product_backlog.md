@@ -74,70 +74,89 @@ Monitor competitor moves. Evaluate strategic relevance. Deliver executive snapsh
 - 16 architecture decisions documented ✅
 - Sample reports in reports/ directory ✅
 
-### 🔲 MVP V1.1 — Business Opportunities — NEXT
-Monitor EU public tenders AND pre-tender signals aligned with strategic objectives.
+✅ MVP V1.1 — Business Opportunities (TED EU Tenders) — COMPLETE
+Monitor live EU public procurement tenders and private sector expansion
+signals relevant to PARTTEAM's target sectors. Surface opportunities
+before competitors, with strategic fit scores and recommended actions.
+What was built:
 
-**What makes this different from a simple TED API wrapper:**
-The ReAct agent uses multiple tools — TED for live tenders, Tavily and
-NewsAPI for pre-tender signals (budget approvals, city council decisions,
-strategy documents). The system detects opportunities months before they
-reach TED, when positioning is still possible.
+agent/tools/ted.py ✅
 
-**Output shape:**
-```
+TED EU Open Data API integration
+Search by CPV code, keyword, country, publication date
+@mcp.tool() registered (in-process MCP pattern)
+No API key required (open data)
+Called directly in collect_opportunities (deterministic, no ReAct needed)
+
+
+New nodes in agent/nodes.py ✅
+
+collect_opportunities — calls TED directly + runs ReAct agent
+(Tavily + NewsAPI + HackerNews) for private/pre-tender signals
+evaluate_opportunities — LLM + RAG, match against strategic
+objectives, classify as Live Tender or Private Opportunity,
+assign impact_level, bid_fit_summary, deadline_urgency,
+recommended_action, confidence score
+generate_opportunity_brief — formats three-section output:
+LIVE TENDERS / PRIVATE OPPORTUNITIES / EXECUTIVE TAKEAWAY
+
+
+New branch in agent/graph.py ✅
+
+route_after_validation() extension point activated
+"Business Opportunities" routes to collect_opportunities
+
+
+agent/state.py ✅
+
+Field renamed: competitor → subject (generic across all types)
+New field: sector (Optional[str]) for Business Opportunities runs
+New fields: raw_tenders, raw_private_signals,
+evaluated_tenders, evaluated_private
+
+
+api/main.py ✅
+
+RunRequest.company renamed to RunRequest.subject
+Response payload returns tenders + private_opportunities
+alongside existing signals (V1.0 backward compatible)
+
+
+api/static/index.html ✅
+
+Payload field updated: company → subject
+renderBrief updated: reads data.subject (was data.competitor)
+renderBrief updated: renders tenders + private_opportunities
+with tender-specific fields (authority, country, deadline, value,
+deadline_urgency, recommended_action)
+Stats row shows Tenders + Private counts for Business Opportunities
+exportBrief updated: uses data.subject throughout
+demoRun updated: uses subject key
+
+
+
+Output shape:
 Business Opportunities — Smart Cities (Last 30 days)
 
 ── LIVE TENDERS ─────────────────────────────────
-• Lisbon Metro Digital Signage — Deadline: 21 March 2026
+- Lisbon Metro Digital Signage — Deadline: 21 March 2026
   Value: €450,000 · CPV: 32321200
   Strategic Link: Smart Cities objective
 
-── EMERGING OPPORTUNITIES ───────────────────────
-• Porto Smart Mobility Budget Approved — Feb 2026
+── PRIVATE OPPORTUNITIES ────────────────────────
+- Porto Smart Mobility Budget Approved — Feb 2026
   Signal: City council approved €2.1M smart mobility budget
   Tender expected: Q3 2026
   Strategic Link: Smart Cities + International Expansion
 
 ── EXECUTIVE TAKEAWAY ───────────────────────────
 Position for Porto now. Submit for Lisbon by March 21.
-```
+LLM call budget: Max 7 calls per run. Opportunity evaluation
+replaces signal evaluation. Budget allocation unchanged.
 
-**What needs to be built:**
-1. `agent/tools/ted.py` — TED EU Open Data API integration
-   - Search tenders by CPV code, keyword, country, date
-   - @mcp.tool() registered
-   - No API key required (open data)
-
-2. New nodes in `agent/nodes.py`:
-   - `collect_opportunities` — ReAct loop with TED + Tavily + NewsAPI
-     tools, different system prompt — look for both live tenders and
-     pre-tender signals (budget approvals, procurement strategies,
-     city council decisions)
-   - `evaluate_opportunities` — LLM + RAG, match against strategic
-     objectives, classify as Live Tender or Emerging Opportunity
-   - `generate_opportunity_brief` — format two-section output
-
-3. New branch in `agent/graph.py`:
-   - `route_after_validation()` already has the extension point
-   - Add: "Business Opportunities" → `collect_opportunities`
-   - This makes the conditional edge live for the first time
-
-4. UI — sector dropdown already implemented:
-   - QSR & Food Service, Smart Cities, Airport & Transport,
-     Retail, Public Services
-   - Backend needs to pass sector to the new nodes
-
-**Key architectural decision:**
-Same ReAct agent, context-aware tool registration. Business Opportunities
-uses TED + Tavily + NewsAPI with a procurement-focused system prompt.
-See architecture_decisions.md for rationale.
-
-**LLM call budget for V1.1:**
-Same cap — max 7 calls per run. Opportunity evaluation replaces
-signal evaluation. Budget allocation unchanged.
-
-- Effort: L
-- Risk: Medium — known pattern, new API, new prompt design
+Effort: L
+Risk: Medium — known pattern, new API, new prompt design
+Status: ✅ COMPLETE
 
 ### 🔲 MVP V1.2 — Technology Developments — PLANNED
 Monitor emerging technologies relevant to DOOH and kiosk ecosystem.

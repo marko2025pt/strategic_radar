@@ -1,0 +1,63 @@
+{
+  "run_id": "run_20260305_204948_acrelec",
+  "subject": "Acrelec",
+  "intelligence_type": "Competitor Moves",
+  "time_range_days": 30,
+  "signals": [
+    {
+      "title": "Acrelec Unveils Rebrand as Company Continues Market Expansion",
+      "url": "https://www.tmcnet.com/usubmit/-acrelec-unveils-rebrand-as-company-continues-market-expansion-/2025/03/27/10168438.htm",
+      "snippet": "Acrelec, a subsidiary of GLORY LTD. [TYO:6457] the world's largest supplier of self-ordering kiosks, today announces a significant rebranding initiative, showcasing the company's transform",
+      "source": "TMCnet",
+      "published_at": "2025-03-27",
+      "source_type": "News",
+      "api_origin": "tavily",
+      "selection_reason": "The rebranding and market expansion of Acrelec, a major player in the self-service kiosk industry, is strategically relevant for understanding competitive dynamics and market positioning.",
+      "impact_level": "High",
+      "impact_summary": "Acrelec's rebranding and market expansion signal a strategic push to strengthen their presence in the QSR vertical, where they are already a formidable competitor. This move could enhance their brand recognition and customer loyalty, potentially accelerating their penetration into the European mid-market, which directly threatens PARTTEAM's growth objectives in the QSR sector.",
+      "strategic_link": "QSR growth objective and YSnack software and NOMYU QSR hardware product line",
+      "rag_score": 0.6597,
+      "confidence": 5.2
+    },
+    {
+      "title": "Acrelec Featured on Fast Casual Website",
+      "url": "https://acrelec.com/in-the-news/",
+      "snippet": "Acrelec Acquires OrderMatic. We’re excited to share that Acrelec’s acquisition of OrderMatic was featured on Fast Casual’s website.",
+      "source": "Fast Casual",
+      "published_at": "2022-01-12",
+      "source_type": "News",
+      "api_origin": "tavily",
+      "selection_reason": "Acrelec's acquisition of OrderMatic highlights strategic growth through acquisitions, which is crucial for understanding their expansion strategy and potential impact on the market.",
+      "impact_level": "High",
+      "impact_summary": "Acrelec's acquisition of OrderMatic, featured on Fast Casual, signals a strategic expansion that could enhance their capabilities in the QSR vertical. This move could strengthen Acrelec's market position and technological offerings, posing a direct threat to PARTTEAM's YSnack software and NOMYU QSR hardware product line, especially if it accelerates their penetration in the European mid-market.",
+      "strategic_link": "QSR growth objective and AI-driven personalisation in kiosk software",
+      "rag_score": 0.6085,
+      "confidence": 4.9
+    },
+    {
+      "title": "GLORY Acquires Remaining Equity Shares in Acrelec Group",
+      "url": "https://finance.yahoo.com/news/glory-acquires-remaining-equity-shares-151100757.html",
+      "snippet": "GLORY LTD. has acquired the remaining equity shares in Acrelec Group, solidifying its control over the company.",
+      "source": "Yahoo Finance",
+      "published_at": "2023-10-01",
+      "source_type": "Finance",
+      "api_origin": "tavily",
+      "selection_reason": "The acquisition of Acrelec by GLORY LTD. is a significant strategic move that could influence the competitive landscape and operational strategies within the DOOH and self-service kiosk industry.",
+      "impact_level": "High",
+      "impact_summary": "The acquisition of Acrelec by GLORY LTD. solidifies Acrelec's financial backing and strategic direction, potentially accelerating its market penetration in Europe. This poses a direct threat to PARTTEAM & OEMKIOSKS' QSR growth objectives, especially in key European markets where Acrelec's advanced AI-driven solutions could set new industry standards.",
+      "strategic_link": "Objective 1 — International Expansion",
+      "rag_score": 0.506,
+      "confidence": 4.2
+    }
+  ],
+  "tenders": [],
+  "private_opportunities": [],
+  "pretender_opportunities": [],
+  "executive_takeaway": "Acrelec's recent strategic moves, including rebranding, acquisitions, and financial backing from GLORY, indicate a robust push to dominate the QSR market, particularly in Europe. PARTTEAM should consider accelerating its own market penetration strategies and enhancing its product offerings to counteract Acrelec's growing influence. Strengthening partnerships and exploring new technological advancements in AI-driven solutions could be crucial to maintaining competitive advantage.",
+  "final_brief": "Strategic Snapshot — Acrelec (Last 30 Days)\n\n── HIGH IMPACT ──────────────────────────────────────\n• Acrelec Unveils Rebrand as Company Continues Market Expansion — Confidence: 5.2/10 / Impact: Acrelec's rebranding and market expansion could enhance their brand recognition and customer loyalty, threatening PARTTEAM's growth in the QSR sector. / Strategic Link: QSR growth objective and YSnack software and NOMYU QSR hardware product line / Source: https://www.tmcnet.com/usubmit/-acrelec-unveils-rebrand-as-company-continues-market-expansion-/2025/03/27/10168438.htm\n\n• Acrelec Featured on Fast Casual Website — Confidence: 4.9/10 / Impact: Acrelec's acquisition of OrderMatic could strengthen their market position and technological offerings, posing a threat to PARTTEAM's QSR product lines. / Strategic Link: QSR growth objective and AI-driven personalisation in kiosk software / Source: https://acrelec.com/in-the-news/\n\n• GLORY Acquires Remaining Equity Shares in Acrelec Group — Confidence: 4.2/10 / Impact: GLORY's acquisition of Acrelec could accelerate Acrelec's market penetration in Europe, challenging PARTTEAM's QSR growth objectives. / Strategic Link: Objective 1 — International Expansion / Source: https://finance.yahoo.com/news/glory-acquires-remaining-equity-shares-151100757.html\n\n── MEDIUM IMPACT ────────────────────────────────────\nNo signals at this impact level.\n\n── LOW IMPACT ───────────────────────────────────────\nNo signals at this impact level.\n\n── EXECUTIVE TAKEAWAY ───────────────────────────────\nAcrelec's recent strategic moves, including rebranding, acquisitions, and financial backing from GLORY, indicate a robust push to dominate the QSR market, particularly in Europe. PARTTEAM should consider accelerating its own market penetration strategies and enhancing its product offerings to counteract Acrelec's growing influence. Strengthening partnerships and exploring new technological advancements in AI-driven solutions could be crucial to maintaining competitive advantage.",
+  "llm_calls_made": 5,
+  "elapsed_seconds": null,
+  "generated_at": "2026-03-05T20:50:27.347298+00:00",
+  "notify_email": "",
+  "error": null
+}

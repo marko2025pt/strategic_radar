@@ -151,6 +151,12 @@ News articles tool. Free tier capped at 28 days. @mcp.tool() registered.
 Technology signal tool via Algolia HN Search API. No API key
 required. @mcp.tool() registered.
 
+### agent/tools/ted.py ✅
+EU public tenders tool. TED EU Open Data API. Searches by CPV code,
+keyword, country, and publication date. Returns structured tender objects.
+No API key required. Called directly in collect_opportunities (deterministic
+— no ReAct loop needed). @mcp.tool() registered.
+
 ### api/main.py ✅
 FastAPI server. Endpoints: /run, /health, /notify, /ui.
 CORS enabled. Competitor registry validation. Report persistence.
@@ -159,8 +165,11 @@ Non-blocking N8N notification via asyncio background task.
 ### api/static/index.html ✅
 Single-page HTML UI. Cascading dropdowns (intelligence type →
 competitor/sector/technology). Live step-by-step progress animation.
-Signal cards grouped by impact level. Executive takeaway panel.
-Email field for on-demand delivery. Run history. Export to text.
+V1.0: signal cards grouped by impact level. V1.1: tender cards and
+private opportunity cards with deadline, value, authority, and
+recommended action fields. Stats row adapts per intelligence type.
+Executive takeaway panel. Email field for on-demand delivery.
+Run history. Export to text.
 
 ### n8n/workflow1_ondemand.json ✅
 Webhook-triggered N8N workflow. Receives brief payload from FastAPI
@@ -195,28 +204,20 @@ SendGrid to fixed recipient. Published and live.
 
 ---
 
-## Next Steps — V1.1 and Beyond
+## V1.1
 
 ### V1.1 — Business Opportunities (TED EU Tenders)
 The LangGraph graph already has the extension point stubbed in
 `route_after_validation()`. Adding V1.1 requires:
 
-1. `agent/tools/ted.py` — TED EU Open Data API integration
-   - Search tenders by CPV code and keyword
-   - Filter by country, publication date, estimated value
-   - Return structured tender objects
-
-2. New nodes in `agent/nodes.py`:
-   - `collect_tenders` — call TED API with objective-derived queries
-   - `evaluate_tenders` — match tenders against strategic objectives via RAG
-   - `generate_opportunity_brief` — format opportunity snapshot
-
-3. New branch in `agent/graph.py`:
-   - Route "Business Opportunities" to tender collection nodes
-   - Reuse existing RAG evaluation pattern
-
-4. UI update — second input for Business Opportunities is already
-   implemented as a sector dropdown (QSR, Smart Cities, Airport, etc.)
+V1.1 — Business Opportunities (TED EU Tenders) ✅ COMPLETE
+ted.py built and integrated. New nodes collect_opportunities,
+evaluate_opportunities, generate_opportunity_brief added to
+nodes.py. Graph branch activated in graph.py. State fields updated
+(subject, sector, raw_tenders, raw_private_signals,
+evaluated_tenders, evaluated_private). API updated (subject
+replaces company in request/response). UI updated to render tender
+and private opportunity cards with V1.1-specific fields.
 
 ### V1.2 — Technology Developments
 Similar extension pattern to V1.1. Technology Watchlist already

@@ -1,0 +1,48 @@
+{
+  "run_id": "run_20260306_003037_acrelec",
+  "subject": "Acrelec",
+  "intelligence_type": "Competitor Moves",
+  "time_range_days": 7,
+  "signals": [
+    {
+      "title": "GLORY Acquires Remaining Equity Shares in Acrelec Group",
+      "url": "https://acrelec.com/glory-acquires-remaining-equity-shares-in-acrelec-group/",
+      "snippet": "Acrelec is a global technology company focused on reinventing the customer experience for restaurant and retail brands. Leveraging decades of software, hardware and service expertise, the company develops and integrates new platforms that increase customer engagement, optimize efficiency and improve",
+      "source": "",
+      "published_at": "",
+      "source_type": "web",
+      "api_origin": "tavily",
+      "selection_reason": "The acquisition of Acrelec by GLORY is a significant strategic development in the DOOH and self-service kiosk industry, potentially impacting market dynamics and competitive positioning for companies like PARTTEAM & OEMKIOSKS.",
+      "impact_level": "High",
+      "impact_summary": "The acquisition of Acrelec by Glory Ltd solidifies Acrelec's financial backing and strategic capabilities, potentially accelerating their market penetration in the QSR vertical. This poses a direct threat to PARTTEAM's growth objectives in the QSR sector, particularly with Acrelec's advanced AI-driven upsell and personalization technologies, which could become standard expectations among mid-size QSR chains.",
+      "strategic_link": "QSR growth objective and YSnack software competitiveness",
+      "rag_score": 0.649,
+      "confidence": 5.1
+    },
+    {
+      "title": "ACRELEC's Facial Authentication Technology Paving the Future for ...",
+      "url": "https://acrelec.com/acrelecs-facial-authentication-technology-paving-the-future-for-qsrs/",
+      "snippet": "18 December 2025 - News ## ACRELEC featured on Aviation Pros website 18 June 2024 - News ## Your food waste is a money waste 6 June 2024 - News ## ACRELEC modernizes the airport dining and retail experience with SSP 14 May 2024 - News ## ACRELEC’s Facial Authentication Technolog",
+      "source": "",
+      "published_at": "",
+      "source_type": "web",
+      "api_origin": "tavily",
+      "selection_reason": "Acrelec's development of facial authentication technology is a key innovation in the self-service kiosk sector, offering insights into future trends and technological advancements that could influence strategic planning for PARTTEAM & OEMKIOSKS.",
+      "impact_level": "High",
+      "impact_summary": "Acrelec's development of facial authentication technology could significantly enhance their competitive edge in the QSR and retail sectors, where PARTTEAM's YSnack and NOMYU products directly compete. This advancement may set new expectations for security and personalization in self-service kiosks, potentially pressuring PARTTEAM to innovate rapidly to maintain market relevance.",
+      "strategic_link": "QSR growth objective and AI-driven personalisation in kiosk software",
+      "rag_score": 0.512,
+      "confidence": 4.3
+    }
+  ],
+  "tenders": [],
+  "private_opportunities": [],
+  "pretender_opportunities": [],
+  "executive_takeaway": "Acrelec's recent acquisition by Glory Ltd and their advancements in facial authentication technology present significant competitive challenges. PARTTEAM should prioritize accelerating innovation in AI-driven personalization and security features to maintain competitiveness in the QSR sector. Strategic partnerships or investments in similar technologies could be crucial to counteract Acrelec's enhanced market position and technological capabilities.",
+  "final_brief": "Strategic Snapshot — Acrelec (Last 7 Days)\n\n── HIGH IMPACT ──────────────────────────────────────\n• GLORY Acquires Remaining Equity Shares in Acrelec Group — Confidence: 5.1/10 / Impact: The acquisition of Acrelec by Glory Ltd solidifies Acrelec's financial backing and strategic capabilities, potentially accelerating their market penetration in the QSR vertical. This poses a direct threat to PARTTEAM's growth objectives in the QSR sector, particularly with Acrelec's advanced AI-driven upsell and personalization technologies, which could become standard expectations among mid-size QSR chains. / Strategic Link: QSR growth objective and YSnack software competitiveness / Source: https://acrelec.com/glory-acquires-remaining-equity-shares-in-acrelec-group/\n\n• ACRELEC's Facial Authentication Technology Paving the Future for ... — Confidence: 4.3/10 / Impact: Acrelec's development of facial authentication technology could significantly enhance their competitive edge in the QSR and retail sectors, where PARTTEAM's YSnack and NOMYU products directly compete. This advancement may set new expectations for security and personalization in self-service kiosks, potentially pressuring PARTTEAM to innovate rapidly to maintain market relevance. / Strategic Link: QSR growth objective and AI-driven personalisation in kiosk software / Source: https://acrelec.com/acrelecs-facial-authentication-technology-paving-the-future-for-qsrs/\n\n── MEDIUM IMPACT ────────────────────────────────────\nNo signals at this impact level.\n\n── LOW IMPACT ───────────────────────────────────────\nNo signals at this impact level.\n\n── EXECUTIVE TAKEAWAY ───────────────────────────────\nAcrelec's recent acquisition by Glory Ltd and their advancements in facial authentication technology present significant competitive challenges. PARTTEAM should prioritize accelerating innovation in AI-driven personalization and security features to maintain competitiveness in the QSR sector. Strategic partnerships or investments in similar technologies could be crucial to counteract Acrelec's enhanced market position and technological capabilities.",
+  "llm_calls_made": 4,
+  "elapsed_seconds": null,
+  "generated_at": "2026-03-06T00:31:18.977749+00:00",
+  "notify_email": "",
+  "error": null
+}

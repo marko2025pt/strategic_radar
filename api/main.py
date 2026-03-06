@@ -1,326 +1,299 @@
 """
-api/main.py — Strategic Radar FastAPI Server
+api/main.py  —  V1.1 + navigation update
 
-Entry points:
-  POST /run      — trigger the LangGraph agent, return intelligence brief
-  POST /notify   — called internally after /run to trigger N8N email delivery
-  GET  /health   — verify all services are reachable (used by Railway + N8N)
-  GET  /ui       — static HTML interface (served from api/static/index.html)
-
-Both N8N Cloud and the HTML UI call POST /run.
-Response shape is identical regardless of caller.
+Changes:
+  - / now serves index.html (Overview landing page)
+  - /tool serves tool.html (the intelligence tool)
+  - /slides serves slides.html (the presentation)
+  - /ui kept as alias for /tool (backward compatibility)
+  - Root JSON endpoint moved to /api/info
 """
 
 import asyncio
 import json
-import os
-import time
-from datetime import datetime
+import uuid
+from datetime import datetime, timezone
 from pathlib import Path
-from typing import Literal, Optional
+from typing import Optional
 
 import httpx
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field
 
-from core.logging_config import get_logger
-from agent.graph import graph as agent_graph
+from agent.graph import graph
 from agent.state import default_state
+from core.logging_config import get_logger
 
 logger = get_logger(__name__)
 
-# ── APP ───────────────────────────────────────────────────────────────────────
+# ---------------------------------------------------------------------------
+# App
+# ---------------------------------------------------------------------------
 
 app = FastAPI(
     title="Strategic Radar — Intelligence Snapshot Engine",
-    version="1.0.0",
-    docs_url="/docs",
+    description="Autonomous strategic intelligence agent for PARTTEAM & OEMKIOSKS",
+    version="1.1.0",
 )
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
-    allow_methods=["GET", "POST"],
+    allow_credentials=True,
+    allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# ── STATIC UI ─────────────────────────────────────────────────────────────────
-
-static_dir = Path(__file__).parent / "static"
-if static_dir.exists():
-    app.mount("/ui", StaticFiles(directory=str(static_dir), html=True), name="ui")
-    logger.info("Static UI mounted at /ui")
-else:
-    logger.warning("api/static/ not found — create it and add index.html")
-
-# ── COMPETITOR REGISTRY ───────────────────────────────────────────────────────
-
-_registry_path = Path(__file__).parent.parent / "rag" / "kb" / "competitor_registry.json"
-
-def _load_registry() -> dict:
-    try:
-        with open(_registry_path) as f:
-            data = json.load(f)
-        registry = {c["name"].lower(): c for c in data["competitors"]}
-        logger.info(f"Registry loaded — {len(registry)} competitors")
-        return registry
-    except FileNotFoundError:
-        logger.warning(f"Registry not found at {_registry_path}")
-        return {}
-    except Exception as e:
-        logger.error(f"Failed to load registry: {e}")
-        return {}
-
-COMPETITOR_REGISTRY = _load_registry()
-
-# ── MODELS ────────────────────────────────────────────────────────────────────
+# ---------------------------------------------------------------------------
+# Request / Response models
+# ---------------------------------------------------------------------------
 
 class RunRequest(BaseModel):
-    company: str = Field(..., example="Acrelec")
-    intelligence_type: Literal[
-        "Competitor Moves",
-        "Business Opportunities",
-        "Technology Developments"
-    ] = Field(default="Competitor Moves")
-    time_range_days: int = Field(default=7, ge=1, le=30)
+    subject: str = Field(
+        ...,
+        description=(
+            "V1.0 Competitor Moves: competitor name (e.g. 'Acrelec'). "
+            "V1.1 Business Opportunities: sector name (e.g. 'Smart Cities')."
+        )
+    )
+    intelligence_type: str = Field(
+        default="Competitor Moves",
+        description="'Competitor Moves' | 'Business Opportunities'"
+    )
+    time_range_days: int = Field(
+        default=7,
+        description="7 | 14 | 30"
+    )
     notify_email: Optional[str] = Field(
-        default="",
-        description="Optional email address to send the brief to via N8N"
+        default=None,
+        description="Optional email for on-demand N8N delivery"
+    )
+    sector: Optional[str] = Field(
+        default=None,
+        description="Set automatically for Business Opportunities — mirrors subject"
     )
 
-    @validator("company")
-    def company_not_empty(cls, v):
-        if not v or not v.strip():
-            raise ValueError("company must not be empty")
-        return v.strip()
 
-class HealthResponse(BaseModel):
-    status: str
-    timestamp: str
-    services: dict
+class NotifyRequest(BaseModel):
+    brief_payload: dict
 
-# ── ROUTES ────────────────────────────────────────────────────────────────────
 
-@app.get("/")
-def root():
+# ---------------------------------------------------------------------------
+# Routes — HTML pages
+# ---------------------------------------------------------------------------
+
+@app.get("/", response_class=HTMLResponse)
+async def serve_overview():
+    """Overview landing page."""
+    html_path = Path(__file__).parent / "static" / "index.html"
+    if not html_path.exists():
+        raise HTTPException(status_code=404, detail="Overview page not found")
+    return HTMLResponse(content=html_path.read_text(encoding="utf-8"))
+
+
+@app.get("/tool", response_class=HTMLResponse)
+async def serve_tool():
+    """Intelligence tool UI."""
+    html_path = Path(__file__).parent / "static" / "tool.html"
+    if not html_path.exists():
+        raise HTTPException(status_code=404, detail="Tool not found")
+    return HTMLResponse(content=html_path.read_text(encoding="utf-8"))
+
+
+@app.get("/ui", response_class=HTMLResponse)
+async def serve_ui():
+    """Alias for /tool — backward compatibility."""
+    html_path = Path(__file__).parent / "static" / "tool.html"
+    if not html_path.exists():
+        raise HTTPException(status_code=404, detail="UI not found")
+    return HTMLResponse(content=html_path.read_text(encoding="utf-8"))
+
+
+@app.get("/slides", response_class=HTMLResponse)
+async def serve_slides():
+    """Presentation slides."""
+    html_path = Path(__file__).parent / "static" / "slides.html"
+    if not html_path.exists():
+        raise HTTPException(status_code=404, detail="Slides not found")
+    return HTMLResponse(content=html_path.read_text(encoding="utf-8"))
+
+
+# ---------------------------------------------------------------------------
+# Routes — API
+# ---------------------------------------------------------------------------
+
+@app.get("/api/info")
+async def api_info():
     return {
         "service": "Strategic Radar",
-        "ui":      "/ui",
-        "docs":    "/docs",
-        "health":  "/health",
-        "run":     "POST /run"
+        "version": "1.1.0",
+        "endpoints": {
+            "overview":     "/",
+            "tool":         "/tool",
+            "slides":       "/slides",
+            "run":          "POST /run",
+            "health":       "/health",
+            "notify":       "POST /notify",
+            "docs":         "/docs",
+        }
     }
 
 
-@app.get("/health", response_model=HealthResponse)
-def health():
-    """
-    Verify all services are reachable.
-    Called by Railway health checks and N8N before triggering a run.
-    Returns 200 if everything is up, 503 if a critical service is down.
-    """
-    services = {}
-    overall  = "ok"
+@app.get("/health")
+async def health():
+    status = {"status": "ok", "checks": {}}
 
-    # Pinecone
     try:
         from rag.retriever import retrieve
-        retrieve("health check", top_k=1)
-        services["pinecone"] = "ok"
+        result = retrieve(query="test health check", top_k=1)
+        status["checks"]["pinecone"] = "ok"
     except Exception as e:
-        logger.error(f"Health check — Pinecone failed: {e}")
-        services["pinecone"] = "error"
-        overall = "degraded"
+        status["checks"]["pinecone"] = f"error: {str(e)[:100]}"
+        status["status"] = "degraded"
 
-    # LLM — check the key exists
-    if os.getenv("OPENAI_API_KEY") or os.getenv("ANTHROPIC_API_KEY"):
-        services["llm"] = "ok"
-    else:
-        services["llm"] = "no api key"
-        overall = "degraded"
+    try:
+        import os
+        from dotenv import load_dotenv
+        load_dotenv(override=True)
+        key = os.getenv("OPENAI_API_KEY", "")
+        status["checks"]["openai_key"] = "present" if key and key.startswith("sk-") else "missing"
+    except Exception as e:
+        status["checks"]["openai_key"] = f"error: {str(e)[:100]}"
 
-    # Competitor registry
-    services["registry"] = (
-        f"{len(COMPETITOR_REGISTRY)} competitors loaded"
-        if COMPETITOR_REGISTRY else "empty"
-    )
+    try:
+        registry_path = Path(__file__).parent.parent / "rag" / "kb" / "competitor_registry.json"
+        with open(registry_path) as f:
+            reg = json.load(f)
+        entries = reg if isinstance(reg, list) else reg.get("competitors", [])
+        status["checks"]["competitor_registry"] = f"ok — {len(entries)} entries"
+    except Exception as e:
+        status["checks"]["competitor_registry"] = f"error: {str(e)[:100]}"
 
-    response = HealthResponse(
-        status=overall,
-        timestamp=datetime.utcnow().isoformat() + "Z",
-        services=services,
-    )
-
-    if overall != "ok":
-        from fastapi.responses import JSONResponse
-        return JSONResponse(status_code=503, content=response.dict())
-
-    return response
+    return status
 
 
 @app.post("/run")
-async def run(request: RunRequest):
-    """
-    Trigger the LangGraph agent.
+async def run_agent(request: RunRequest):
+    run_id = f"run_{datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S')}_{request.subject.lower().replace(' ', '_')}"
 
-    Validates the competitor against the registry, builds the initial
-    state, runs the full graph, and returns the intelligence brief.
-
-    Called by:
-      - The HTML UI (api/static/index.html)
-      - N8N Cloud scheduled workflow
-    """
-    start = time.time()
     logger.info(
-        f"Run requested — company={request.company!r} "
-        f"type={request.intelligence_type!r} "
-        f"days={request.time_range_days} "
-        f"notify={request.notify_email!r}"
+        f"[{run_id}] /run — "
+        f"subject='{request.subject}' | "
+        f"type='{request.intelligence_type}' | "
+        f"days={request.time_range_days}"
     )
 
-    # Validate competitor against registry
-    if COMPETITOR_REGISTRY:
-        if request.company.lower() not in COMPETITOR_REGISTRY:
-            known = [c["name"] for c in COMPETITOR_REGISTRY.values()]
-            raise HTTPException(
-                status_code=422,
-                detail=(
-                    f"'{request.company}' not in competitor registry. "
-                    f"Known competitors: {known}"
-                )
-            )
-
-    # Snap time_range_days to nearest valid value (7, 14, or 30)
-    days = request.time_range_days
-    snapped_days = min([7, 14, 30], key=lambda x: abs(x - days))
-
-    # Build run_id for log correlation
-    run_id = (
-        f"run_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}_"
-        f"{request.company.lower().replace(' ', '-')}"
-    )
-
-    # Build fully initialised agent state
-    initial_state = default_state(
-        competitor=request.company,
-        intelligence_type=request.intelligence_type,
-        time_range_days=snapped_days,
-        run_id=run_id,
-    )
-
-    # Run the LangGraph graph in a thread pool
-    # (graph.invoke is synchronous — run_in_executor keeps FastAPI responsive)
     try:
-        loop   = asyncio.get_event_loop()
-        result = await loop.run_in_executor(
-            None, agent_graph.invoke, initial_state
+        sector = (
+            request.subject
+            if request.intelligence_type == "Business Opportunities"
+            else request.sector
         )
+        initial_state = default_state(
+            subject=request.subject,
+            intelligence_type=request.intelligence_type,
+            time_range_days=request.time_range_days,
+            run_id=run_id,
+            sector=sector,
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=422, detail=str(e))
+
+    try:
+        result = graph.invoke(initial_state)
     except Exception as e:
-        logger.error(f"Agent run failed: {e}", exc_info=True)
+        logger.error(f"[{run_id}] /run — graph execution error: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Agent execution failed: {str(e)}")
+
+    if not result.get("validated"):
         raise HTTPException(
-            status_code=500,
-            detail=f"Agent run failed: {str(e)}"
+            status_code=422,
+            detail=result.get("error", "Validation failed")
         )
 
-    elapsed = round(time.time() - start, 1)
-    logger.info(f"Run complete — {elapsed}s — company={request.company!r}")
-
-    # Save report to reports/ directory
-    _save_report(request, result, elapsed)
-
-    # Build response payload
     response_payload = {
-        "competitor":         request.company,
-        "intelligence_type":  request.intelligence_type,
-        "time_range_days":    snapped_days,
-        "signals":            result.get("evaluated_signals", []),
-        "executive_takeaway": result.get("final_brief", ""),
-        "llm_calls_made":     result.get("llm_calls_made", 0),
-        "elapsed_seconds":    elapsed,
-        "generated_at":       datetime.utcnow().isoformat() + "Z",
-        "notify_email":       request.notify_email or "",
+        "run_id":                  run_id,
+        "subject":                 request.subject,
+        "intelligence_type":       request.intelligence_type,
+        "time_range_days":         request.time_range_days,
+        "signals":                 result.get("evaluated_signals", []),
+        "tenders":                 result.get("evaluated_tenders", []),
+        "private_opportunities":   result.get("evaluated_private", []),
+        "pretender_opportunities": result.get("evaluated_pretender", []),
+        "executive_takeaway":      _extract_takeaway(result.get("final_brief", "")),
+        "final_brief":             result.get("final_brief", ""),
+        "llm_calls_made":          result.get("llm_calls_made", 0),
+        "elapsed_seconds":         None,
+        "generated_at":            datetime.now(timezone.utc).isoformat(),
+        "notify_email":            request.notify_email,
+        "error":                   result.get("error"),
     }
 
-    # Notify N8N for email delivery if email provided (non-blocking)
-    if request.notify_email and result.get("final_brief"):
+    _save_report(run_id, response_payload)
+
+    if request.notify_email:
         asyncio.create_task(_notify_n8n(response_payload))
 
-    return response_payload
+    return JSONResponse(content=response_payload)
 
 
 @app.post("/notify")
-async def notify(payload: dict):
-    """
-    Can be called directly to trigger N8N email delivery.
-    Useful for testing the N8N workflow independently.
-    """
-    result = await _notify_n8n(payload)
-    return result
-
-
-# ── N8N NOTIFICATION ──────────────────────────────────────────────────────────
-
-async def _notify_n8n(payload: dict) -> dict:
-    """
-    POST the brief payload to the N8N webhook URL.
-    N8N Workflow 1 listens on this webhook and handles
-    PDF formatting and email delivery.
-    Silent on failure — never crashes the response.
-    """
-    n8n_webhook_url = os.getenv("N8N_WEBHOOK_URL", "")
-
-    if not n8n_webhook_url:
-        logger.warning("N8N_WEBHOOK_URL not set — skipping N8N notification")
-        return {"status": "skipped", "reason": "N8N_WEBHOOK_URL not configured"}
-
+async def notify(request: NotifyRequest):
     try:
-        async with httpx.AsyncClient(timeout=15.0) as client:
-            response = await client.post(n8n_webhook_url, json=payload)
-            response.raise_for_status()
-        logger.info(f"N8N notified — status={response.status_code}")
-        return {"status": "notified"}
-    except httpx.TimeoutException:
-        logger.warning("N8N notification timed out (non-critical)")
-        return {"status": "timeout"}
+        await _notify_n8n(request.brief_payload)
+        return {"status": "ok", "message": "N8N notification triggered"}
     except Exception as e:
-        logger.warning(f"N8N notification failed (non-critical): {e}")
-        return {"status": "failed", "error": str(e)}
+        logger.error(f"/notify — error: {e}", exc_info=True)
+        return {"status": "error", "message": str(e)}
 
 
-# ── REPORT PERSISTENCE ────────────────────────────────────────────────────────
+# ---------------------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------------------
 
-def _save_report(request: RunRequest, result: dict, elapsed: float):
-    """
-    Save every generated brief to reports/ as a JSON file.
-    Filename: reports/YYYY-MM-DD_competitor_type.json
-    Silent on failure — never crashes the response.
-    """
+def _extract_takeaway(brief: str) -> str:
+    if not brief:
+        return ""
+    markers = ["── EXECUTIVE TAKEAWAY", "EXECUTIVE TAKEAWAY"]
+    for marker in markers:
+        if marker in brief:
+            section = brief.split(marker, 1)[1]
+            section = section.replace("─", "").strip()
+            return section
+    return brief[-500:] if len(brief) > 500 else brief
+
+
+def _save_report(run_id: str, payload: dict) -> None:
     try:
         reports_dir = Path(__file__).parent.parent / "reports"
         reports_dir.mkdir(exist_ok=True)
-
-        date_str    = datetime.utcnow().strftime("%Y-%m-%d")
-        company_str = request.company.lower().replace(" ", "-")
-        type_str    = request.intelligence_type.lower().replace(" ", "-")
-        filename    = reports_dir / f"{date_str}_{company_str}_{type_str}.json"
-
-        payload = {
-            "competitor":         request.company,
-            "intelligence_type":  request.intelligence_type,
-            "time_range_days":    request.time_range_days,
-            "generated_at":       datetime.utcnow().isoformat() + "Z",
-            "elapsed_seconds":    elapsed,
-            "signals":            result.get("evaluated_signals", []),
-            "executive_takeaway": result.get("final_brief", ""),
-            "llm_calls_made":     result.get("llm_calls_made", 0),
-        }
-
-        with open(filename, "w") as f:
-            json.dump(payload, f, indent=2)
-
-        logger.info(f"Report saved — {filename.name}")
-
+        report_path = reports_dir / f"{run_id}.json"
+        with open(report_path, "w", encoding="utf-8") as f:
+            json.dump(payload, f, indent=2, ensure_ascii=False)
+        logger.debug(f"Report saved: {report_path}")
     except Exception as e:
-        logger.warning(f"Report save failed (non-critical): {e}")
+        logger.warning(f"Failed to save report {run_id}: {e}")
+
+
+async def _notify_n8n(payload: dict) -> None:
+    import os
+    from dotenv import load_dotenv
+    load_dotenv(override=True)
+
+    webhook_url = os.getenv("N8N_WEBHOOK_URL", "")
+    if not webhook_url:
+        logger.warning("_notify_n8n — N8N_WEBHOOK_URL not set, skipping notification")
+        return
+
+    try:
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            resp = await client.post(webhook_url, json=payload)
+            if resp.status_code == 200:
+                logger.info(f"_notify_n8n — notification delivered — status={resp.status_code}")
+            else:
+                logger.warning(f"_notify_n8n — unexpected status: {resp.status_code}")
+    except Exception as e:
+        logger.warning(f"_notify_n8n — failed (non-critical): {e}")

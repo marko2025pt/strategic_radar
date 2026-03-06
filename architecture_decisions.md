@@ -465,6 +465,79 @@ Adds a network hop between FastAPI and N8N. Acceptable — the UI has already re
 
 ---
 
+## Decision 16 — Multilingual TED Data: Translate Inside Evaluation, Not at Tool Level
+
+**Context:**
+The TED EU Open Data API returns procurement notices in the official language
+of the contracting authority. A Portuguese tender arrives in Portuguese, a
+French one in French, a Polish one in Polish. The UI, the brief, and all
+downstream output must be in English.
+Options Considered:
+
+**Translate in ted.py (_parse_notice)** — call the LLM inside the
+tool to translate each raw tender before returning it
+
+**Add a dedicated translate_tenders node** — a separate LangGraph node
+that translates raw_tenders before evaluation
+
+**Translate inside evaluate_opportunities** — add a language instruction
+to the existing system prompt; translation happens as part of the same
+LLM call that evaluates the tender
+
+**Why We Rejected Option 1 — Tool Layer**:
+Tools are data fetchers, not reasoners. A tool that makes an LLM call
+violates single responsibility — it conflates retrieval with transformation.
+It would also translate every raw tender returned by the API, including
+tenders that never survive the evaluation budget cap (max 4 tenders
+evaluated per run). Translation cost would be paid on data that is
+immediately discarded. Principle: tools fetch, agents reason.
+
+**Why We Rejected Option 2 — Dedicated Node**:
+A translate node would be correct in architecture but wasteful in practice.
+It would still translate all raw tenders before knowing which ones fit the
+LLM budget cap inside evaluate_opportunities. Translation and evaluation
+are semantically inseparable — you cannot assess fit without understanding
+the text. Splitting them into two nodes adds a node, adds LLM calls, and
+produces no benefit over Option 3.
+
+**Why We Chose Option 3 — Translate Inside Evaluation**:
+
+Zero extra LLM calls — translation is absorbed into the evaluation call
+that was already happening for every item
+
+Zero wasted translations — only tenders that are actually being evaluated
+get translated, because the instruction lives inside _evaluate_item()
+
+Semantically correct — understanding foreign text and assessing its
+strategic fit are the same cognitive act; they belong in the same prompt
+Implementation is a single paragraph added to the evaluate_opportunities
+system prompt: "the input may be in any language. Translate any
+non-English text as part of your reasoning. All output fields must be
+written in English, regardless of the language of the input."
+GPT-4o is highly reliable at multilingual understanding and produces
+accurate English output from EU procurement language (PT, FR, DE, PL, etc.)
+
+**What This Means in Practice**:
+ted.py remains a pure data fetcher — no LLM calls, no language awareness.
+evaluate_opportunities receives raw tender text in any language and
+produces English evaluation fields (bid_fit_summary, strategic_link,
+recommended_action) as normal. The UI, brief, and export always receive
+English output with no additional processing.
+
+**Trade-off Accepted**:
+Translation is implicit rather than explicit — it is an instruction inside
+a prompt, not a verifiable transformation step. For a production system
+processing **high-stakes legal tender documents**, an explicit translation step
+with validation would be preferable. For this system, where the LLM output
+is advisory and always reviewed by a human before action, implicit
+translation inside evaluation is the right balance between correctness,
+efficiency, and architectural simplicity.
+Principle Reinforced:
+
+Tools fetch. Agents reason. Transformation that requires intelligence
+belongs in the agent layer, and only at the moment it is needed.
+
+
 ## Trade-offs Summary
 
 | Trade-off | Decision | Rationale |

@@ -1,0 +1,228 @@
+{
+  "name": "Strategic Radar — Workflow 2 — Weekly Brief (Competitors + Opportunities)",
+  "nodes": [
+
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            { "field": "cronExpression", "expression": "0 8 * * 1" }
+          ]
+        }
+      },
+      "id": "schedule-trigger",
+      "name": "Every Monday 8am",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [100, 300]
+    },
+
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "competitors-list",
+              "name": "competitors",
+              "value": "=[\"Acrelec\",\"Pyramid Computer\",\"Wanzl\",\"Broadsign\",\"Diebold Nixdorf\",\"LamasaTech\"]",
+              "type": "array"
+            }
+          ]
+        }
+      },
+      "id": "set-competitors",
+      "name": "Set Competitors List",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [320, 300]
+    },
+
+    {
+      "parameters": {
+        "fieldToSplitOut": "competitors",
+        "options": {}
+      },
+      "id": "split-competitors",
+      "name": "Loop — Competitors",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [540, 300]
+    },
+
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.RAILWAY_URL }}/run",
+        "sendBody": true,
+        "contentType": "json",
+        "body": {
+          "subject": "={{ $json.competitors }}",
+          "intelligence_type": "Competitor Moves",
+          "time_range_days": 7,
+          "notify_email": ""
+        },
+        "options": { "timeout": 120000 }
+      },
+      "id": "run-competitor",
+      "name": "Run — Competitor",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [760, 300],
+      "onError": "continueRegularOutput"
+    },
+
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "id": "aggregate-competitors",
+      "name": "Aggregate Competitor Briefs",
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [980, 300]
+    },
+
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "sectors-list",
+              "name": "sectors",
+              "value": "=[\"QSR and Food Service\",\"Smart Cities\",\"Airport and Transport\",\"Retail\",\"Public Services\"]",
+              "type": "array"
+            },
+            {
+              "id": "competitor-briefs",
+              "name": "competitor_briefs",
+              "value": "={{ $json }}",
+              "type": "object"
+            }
+          ]
+        }
+      },
+      "id": "set-sectors",
+      "name": "Set Sectors List + Pass Competitor Briefs",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [1200, 300]
+    },
+
+    {
+      "parameters": {
+        "fieldToSplitOut": "sectors",
+        "options": {}
+      },
+      "id": "split-sectors",
+      "name": "Loop — Sectors",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [1420, 300]
+    },
+
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.RAILWAY_URL }}/run",
+        "sendBody": true,
+        "contentType": "json",
+        "body": {
+          "subject": "={{ $json.sectors }}",
+          "intelligence_type": "Business Opportunities",
+          "time_range_days": 7,
+          "notify_email": ""
+        },
+        "options": { "timeout": 120000 }
+      },
+      "id": "run-sector",
+      "name": "Run — Sector",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1640, 300],
+      "onError": "continueRegularOutput"
+    },
+
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "id": "aggregate-sectors",
+      "name": "Aggregate Sector Briefs",
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [1860, 300]
+    },
+
+    {
+      "parameters": {
+        "jsCode": "// ─────────────────────────────────────────────────────────────────────\n// Build combined weekly email:\n//   SECTION 1 — Competitor Intelligence (6 competitors)\n//   SECTION 2 — Business Opportunities (5 sectors)\n// ─────────────────────────────────────────────────────────────────────\n\nconst items = $input.all();\n// items[0].json contains the aggregated sector briefs array\n// Competitor briefs were passed forward as competitor_briefs field\nconst sectorBriefs     = items.map(i => i.json).filter(b => b && !b.error);\nconst competitorBriefs = items[0]?.json?.competitor_briefs || [];\n\nconst now = new Date().toLocaleDateString('en-GB', {\n  weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'\n});\n\n// ── Colour helpers ────────────────────────────────────────────────────\nconst impactColour  = l => l === 'High' ? '#c0392b' : l === 'Medium' ? '#d17a00' : '#2d8a4e';\nconst urgencyColour = u => u === 'Immediate' ? '#c0392b' : '#4a5066';\n\n// ── Shared card styles ────────────────────────────────────────────────\nconst cardStyle = colour =>\n  `border-left:3px solid ${colour};padding:10px 14px;margin-bottom:10px;background:#fafafa;border-radius:4px`;\n\n// ── Section header ────────────────────────────────────────────────────\nconst sectionHeader = (title, subtitle) => `\n  <div style=\"margin-bottom:32px\">\n    <h2 style=\"font-family:Georgia,serif;font-size:18px;color:#0f1117;\n               border-bottom:2px solid #e4e7f0;padding-bottom:8px;margin-bottom:4px\">\n      ${title}\n    </h2>\n    <p style=\"font-size:11px;color:#9299b0;margin:0 0 16px\">${subtitle}</p>\n`;\n\n// ── Extract takeaway text ─────────────────────────────────────────────\nconst extractTakeaway = raw => {\n  if (!raw) return '';\n  const marker = raw.indexOf('── EXECUTIVE TAKEAWAY');\n  if (marker === -1) return raw.slice(-400);\n  return raw.slice(marker).replace(/── EXECUTIVE TAKEAWAY[─]*/g, '').trim();\n};\n\nconst takeawayBlock = text => !text ? '' : `\n  <div style=\"background:#0f1117;color:#fff;border-radius:6px;\n              padding:16px 18px;margin-top:16px\">\n    <div style=\"font-size:10px;font-weight:600;letter-spacing:0.1em;\n                text-transform:uppercase;color:rgba(255,255,255,0.45);margin-bottom:8px\">\n      Executive Takeaway\n    </div>\n    <div style=\"font-size:13px;line-height:1.7;color:rgba(255,255,255,0.9)\">${text}</div>\n  </div>\n`;\n\n// ─────────────────────────────────────────────────────────────────────\n// SECTION 1 — Competitor Intelligence\n// ─────────────────────────────────────────────────────────────────────\n\nconst renderCompetitorBrief = brief => {\n  if (!brief || brief.error) return '';\n  const signals  = brief.signals || [];\n  const high     = signals.filter(s => s.impact_level === 'High');\n  const medium   = signals.filter(s => s.impact_level === 'Medium');\n  const low      = signals.filter(s => s.impact_level === 'Low');\n  const takeaway = extractTakeaway(brief.executive_takeaway || brief.final_brief || '');\n\n  const renderGroup = (items, level) => {\n    if (!items.length) return '';\n    const colour = impactColour(level);\n    return `\n      <div style=\"margin-bottom:12px\">\n        <div style=\"font-size:10px;font-weight:600;letter-spacing:0.08em;\n                    text-transform:uppercase;color:${colour};margin-bottom:6px\">\n          ${level} Impact\n        </div>\n        ${items.map(s => `\n          <div style=\"${cardStyle(colour)}\">\n            <div style=\"font-weight:600;font-size:13px\">\n              ${s.url\n                ? `<a href=\"${s.url}\" style=\"color:#0f1117;text-decoration:none\">${s.title}</a>`\n                : (s.title || '')}\n            </div>\n            <div style=\"font-size:12px;color:#4a5066;margin-top:4px\">\n              ${s.source || ''}\n              ${s.published_at ? ' &nbsp;|&nbsp; ' + s.published_at : ''}\n              ${s.strategic_link ? ' &nbsp;|&nbsp; ' + s.strategic_link : ''}\n            </div>\n            <div style=\"font-size:12px;color:#4a5066;margin-top:4px\">${s.impact_summary || ''}</div>\n            <div style=\"font-size:11px;color:#9299b0;margin-top:4px\">${s.confidence || 0}/10 confidence</div>\n          </div>\n        `).join('')}\n      </div>\n    `;\n  };\n\n  return `\n    <div style=\"margin-bottom:28px;padding-bottom:24px;border-bottom:1px solid #e4e7f0\">\n      <h3 style=\"font-size:14px;font-weight:600;color:#0f1117;margin:0 0 10px\">\n        ${brief.subject || brief.competitor || ''}\n      </h3>\n      ${!signals.length\n        ? '<p style=\"font-size:12px;color:#9299b0\">No signals found this period.</p>'\n        : renderGroup(high,'High') + renderGroup(medium,'Medium') + renderGroup(low,'Low')\n      }\n      ${takeawayBlock(takeaway)}\n    </div>\n  `;\n};\n\nconst competitorSection =\n  sectionHeader('Competitor Intelligence', 'Competitor moves from the past 7 days') +\n  (competitorBriefs.length\n    ? competitorBriefs.map(renderCompetitorBrief).join('')\n    : '<p style=\"font-size:13px;color:#9299b0\">No competitor data available.</p>') +\n  '</div>';\n\n// ─────────────────────────────────────────────────────────────────────\n// SECTION 2 — Business Opportunities\n// ─────────────────────────────────────────────────────────────────────\n\nconst renderTenders = tenders => {\n  if (!tenders || !tenders.length)\n    return '<p style=\"font-size:12px;color:#9299b0\">No live EU tenders this period.</p>';\n  return tenders.map(t => `\n    <div style=\"${cardStyle(impactColour(t.impact_level))}\">\n      <div style=\"font-weight:600;font-size:13px\">\n        ${t.url\n          ? `<a href=\"${t.url}\" style=\"color:#0f1117;text-decoration:none\">${t.title}</a>`\n          : (t.title || '')}\n      </div>\n      <div style=\"font-size:11px;color:#4a5066;margin-top:4px\">\n        ${t.country ? t.country + ' &nbsp;|&nbsp; ' : ''}\n        ${t.value   ? t.value + ' &nbsp;|&nbsp; ' : ''}\n        Deadline: <strong>${t.deadline || 'N/A'}</strong>\n        &nbsp;|&nbsp;\n        <span style=\"color:${urgencyColour(t.deadline_urgency)}\">${t.deadline_urgency || ''}</span>\n      </div>\n      <div style=\"font-size:12px;color:#4a5066;margin-top:4px\">${t.bid_fit_summary || ''}</div>\n      ${t.recommended_action\n        ? `<div style=\"font-size:11px;color:#1a3cff;margin-top:4px\">→ ${t.recommended_action}</div>`\n        : ''}\n    </div>\n  `).join('');\n};\n\nconst renderPrivate = privates => {\n  if (!privates || !privates.length)\n    return '<p style=\"font-size:12px;color:#9299b0\">No private expansion signals this period.</p>';\n  return privates.map(p => `\n    <div style=\"${cardStyle('#7b2d8b')}\">\n      <div style=\"font-weight:600;font-size:13px\">\n        ${p.url\n          ? `<a href=\"${p.url}\" style=\"color:#0f1117;text-decoration:none\">${p.title}</a>`\n          : (p.title || '')}\n      </div>\n      <div style=\"font-size:11px;color:#4a5066;margin-top:4px\">\n        ${p.source || ''}\n        ${p.published_at ? ' &nbsp;|&nbsp; ' + p.published_at : ''}\n        ${p.signal_type  ? ' &nbsp;|&nbsp; ' + p.signal_type.replace(/_/g,' ') : ''}\n      </div>\n      <div style=\"font-size:12px;color:#4a5066;margin-top:4px\">${p.bid_fit_summary || ''}</div>\n      ${p.recommended_action\n        ? `<div style=\"font-size:11px;color:#1a3cff;margin-top:4px\">→ ${p.recommended_action}</div>`\n        : ''}\n    </div>\n  `).join('');\n};\n\nconst renderSectorBrief = brief => {\n  if (!brief || brief.error) return '';\n  const tenders  = brief.tenders  || [];\n  const privates = brief.private_opportunities || [];\n  const takeaway = extractTakeaway(brief.executive_takeaway || brief.final_brief || '');\n  return `\n    <div style=\"margin-bottom:28px;padding-bottom:24px;border-bottom:1px solid #e4e7f0\">\n      <h3 style=\"font-size:14px;font-weight:600;color:#0f1117;margin:0 0 12px\">\n        ${brief.subject || ''}\n      </h3>\n      <div style=\"font-size:10px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;\n                  color:#1a3cff;margin-bottom:8px\">Live EU Tenders</div>\n      ${renderTenders(tenders)}\n      <div style=\"font-size:10px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;\n                  color:#7b2d8b;margin:14px 0 8px\">Private Opportunities</div>\n      ${renderPrivate(privates)}\n      ${takeawayBlock(takeaway)}\n    </div>\n  `;\n};\n\nconst opportunitiesSection =\n  sectionHeader('Business Opportunities', 'Live tenders and private expansion signals from the past 7 days') +\n  (sectorBriefs.length\n    ? sectorBriefs.map(renderSectorBrief).join('')\n    : '<p style=\"font-size:13px;color:#9299b0\">No opportunity data available.</p>') +\n  '</div>';\n\n// ─────────────────────────────────────────────────────────────────────\n// Assemble full email\n// ─────────────────────────────────────────────────────────────────────\n\nconst html = `\n<!DOCTYPE html>\n<html>\n<body style=\"font-family:'Helvetica Neue',Arial,sans-serif;background:#f7f8fc;margin:0;padding:0\">\n  <div style=\"max-width:700px;margin:0 auto;background:#fff;border:1px solid #e4e7f0\">\n\n    <div style=\"background:#0f1117;padding:24px 32px\">\n      <div style=\"font-family:Georgia,serif;font-size:22px;color:#fff\">Strategic Radar</div>\n      <div style=\"font-size:11px;color:rgba(255,255,255,0.5);margin-top:4px;\n                  letter-spacing:0.06em;text-transform:uppercase\">\n        Weekly Intelligence Brief\n      </div>\n    </div>\n\n    <div style=\"padding:32px\">\n      <p style=\"font-size:13px;color:#9299b0;margin:0 0 36px\">${now}</p>\n      ${competitorSection}\n      <div style=\"height:32px\"></div>\n      ${opportunitiesSection}\n      <hr style=\"border:none;border-top:1px solid #e4e7f0;margin:32px 0\">\n      <p style=\"font-size:11px;color:#9299b0;text-align:center\">\n        Generated by Strategic Radar &nbsp;·&nbsp; PARTTEAM &amp; OEMKIOSKS\n      </p>\n    </div>\n\n  </div>\n</body>\n</html>\n`;\n\nconst dateStamp = new Date().toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});\nreturn [{ json: {\n  html,\n  subject_line: `Strategic Radar — Weekly Brief — ${dateStamp}`\n} }];"
+      },
+      "id": "build-email",
+      "name": "Build Combined Weekly Email",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [2080, 300]
+    },
+
+    {
+      "parameters": {
+        "fromEmail": "={{ $env.SENDGRID_FROM_EMAIL }}",
+        "toEmail":   "={{ $env.WEEKLY_RECIPIENT_EMAIL }}",
+        "subject":   "={{ $json.subject_line }}",
+        "emailType": "html",
+        "message":   "={{ $json.html }}"
+      },
+      "id": "send-email",
+      "name": "Send via SendGrid",
+      "type": "n8n-nodes-base.sendGrid",
+      "typeVersion": 1,
+      "position": [2300, 300]
+    }
+
+  ],
+
+  "connections": {
+    "Every Monday 8am": {
+      "main": [[{ "node": "Set Competitors List", "type": "main", "index": 0 }]]
+    },
+    "Set Competitors List": {
+      "main": [[{ "node": "Loop — Competitors", "type": "main", "index": 0 }]]
+    },
+    "Loop — Competitors": {
+      "main": [
+        [{ "node": "Run — Competitor",           "type": "main", "index": 0 }],
+        [{ "node": "Aggregate Competitor Briefs", "type": "main", "index": 0 }]
+      ]
+    },
+    "Run — Competitor": {
+      "main": [[{ "node": "Loop — Competitors", "type": "main", "index": 0 }]]
+    },
+    "Aggregate Competitor Briefs": {
+      "main": [[{ "node": "Set Sectors List + Pass Competitor Briefs", "type": "main", "index": 0 }]]
+    },
+    "Set Sectors List + Pass Competitor Briefs": {
+      "main": [[{ "node": "Loop — Sectors", "type": "main", "index": 0 }]]
+    },
+    "Loop — Sectors": {
+      "main": [
+        [{ "node": "Run — Sector",          "type": "main", "index": 0 }],
+        [{ "node": "Aggregate Sector Briefs","type": "main", "index": 0 }]
+      ]
+    },
+    "Run — Sector": {
+      "main": [[{ "node": "Loop — Sectors", "type": "main", "index": 0 }]]
+    },
+    "Aggregate Sector Briefs": {
+      "main": [[{ "node": "Build Combined Weekly Email", "type": "main", "index": 0 }]]
+    },
+    "Build Combined Weekly Email": {
+      "main": [[{ "node": "Send via SendGrid", "type": "main", "index": 0 }]]
+    }
+  },
+
+  "settings": { "executionOrder": "v1" },
+  "staticData": null,
+  "meta": { "instanceId": "strategic-radar-workflow2-v1.1" }
+}
