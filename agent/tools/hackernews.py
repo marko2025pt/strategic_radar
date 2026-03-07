@@ -1,3 +1,4 @@
+# Version 1.1 — Final demo delivery to Ironhack 2026-03-06
 """
 agent/tools/hackernews.py
 

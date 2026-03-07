@@ -1,3 +1,4 @@
+[//]: # (Version 1.1 — Final demo delivery to Ironhack 2026-03-06)
 # Strategic Radar - Autonomous Strategic Intelligence Snapshot Engine
 ### Bounded Signal Evaluation for Competitive Decision-Making
 ### Built for the DOOH & Self-Service Kiosk Industry
@@ -20,14 +21,16 @@ PARTTEAM & OEMKIOSKS.
 | Document | Purpose |
 |---|---|
 | **README.md** | Project overview, architecture, setup and deployment guide |
+| **casestudy.md** | Full case study write-up — the Ironhack AI Consulting submission |
 | **architecture_decisions.md** | Every architectural decision, the reasoning behind it, and trade-offs made |
 | **project_summary.md** | Current build status, completed modules, and immediate next step |
-| **product_backlog.md** | Post-MVP improvements — categorised, layered, and effort-estimated |
+| **product_roadmap.md** | Full product roadmap V1.2 → V3.0 — versioned features, effort estimates, and strategic rationale |
 
 > Start with this file for project context and setup instructions.
+> Read `casestudy.md` for the full problem framing, solution narrative, and design thinking.
 > To understand why the system was designed the way it was, read `architecture_decisions.md`.
 > To see what has been built and what is currently in progress, read `project_summary.md`.
-> To explore planned improvements and future capabilities, read `product_backlog.md`.
+> To explore the product roadmap from V1.2 to V3.0, read `product_roadmap.md`.
 
 ---
 
@@ -35,7 +38,9 @@ PARTTEAM & OEMKIOSKS.
 
 | Service | URL |
 |---|---|
-| **UI** | https://strategicradar-production.up.railway.app/ui |
+| **Overview** | https://strategicradar-production.up.railway.app/ |
+| **Tool UI** | https://strategicradar-production.up.railway.app/tool |
+| **Slides** | https://strategicradar-production.up.railway.app/slides |
 | **API** | https://strategicradar-production.up.railway.app/run |
 | **Health** | https://strategicradar-production.up.railway.app/health |
 | **API Docs** | https://strategicradar-production.up.railway.app/docs |
@@ -49,10 +54,10 @@ The system is always-on. No local machine required.
 Most competitive intelligence tools generate generic company profiles.
 This system does something different.
 
-Given a competitor name and a time window, it autonomously finds recent market
-signals, evaluates each one against your company's specific business identity
-and strategic objectives, and produces a 1-page executive snapshot answering
-one question:
+Given a competitor name (or a target sector) and a time window, it autonomously
+finds recent market signals, evaluates each one against your company's specific
+business identity and strategic objectives, and produces a 1-page executive
+snapshot answering one question:
 
 **"Does this signal matter to us — and why?"**
 
@@ -60,23 +65,26 @@ The output is not a report. It is a bounded, actionable intelligence brief.
 
 ---
 
-## MVP Status — v1.0 Complete ✅
+## MVP Status — V1.1 Complete
 
-**MVP V1.0 — Competitor Intelligence** ✅ COMPLETE
+**MVP V1.0 — Competitor Intelligence** COMPLETE
 Monitor competitor moves. Evaluate strategic relevance. Deliver executive snapshot.
 - Tools: Tavily + NewsAPI + HackerNews
 - Input: competitor name + time window + optional email
 - Output: ranked signal brief in UI + HTML email delivery
 
-**MVP V1.1 — + Business Opportunities** ← Post-MVP
-Monitor EU public tenders aligned with strategic objectives.
-- Adds: TED API (EU public procurement)
+**MVP V1.1 — + Business Opportunities** COMPLETE
+Monitor EU public tenders and private sector opportunities aligned with strategic objectives.
+- Adds: TED EU Open Data API (public tenders)
+- Adds: Private opportunity and pre-tender signal collection via Tavily
 - Adds: Business Opportunities branch in LangGraph
+- Input: sector name + time window + optional email
+- Output: ranked tender/opportunity brief in UI + HTML email delivery
 
-**MVP V1.2 — + Technology Developments** ← Post-MVP
+**MVP V1.2 — + Technology Developments** Post-MVP
 Monitor emerging technologies relevant to DOOH and kiosk ecosystem.
 - Adds: Technology Developments branch in LangGraph
-- Adds: Technology Watchlist to Knowledge Base
+- Adds: Technology Watchlist queries (KB already ingested)
 
 ---
 
@@ -101,8 +109,8 @@ Custom HTML UI     →  Human-facing interface for manual runs & demos
 LangGraph          →  Cognitive workflow controller
 ReAct Agent        →  Signal discovery & research loop
 Pinecone RAG       →  Strategic identity & objectives grounding
-External APIs      →  Live signal data (Tavily, NewsAPI, HackerNews)
-LLM                →  Strategic evaluation & brief generation (OpenAI)
+External APIs      →  Live signal data (Tavily, NewsAPI, HackerNews, TED EU)
+LLM                →  Strategic evaluation & brief generation (OpenAI GPT-4o)
 SendGrid           →  Email delivery
 ```
 
@@ -111,7 +119,7 @@ SendGrid           →  Email delivery
 - Cognition, control, and orchestration are strictly separated
 - Only the research phase uses dynamic reasoning (ReAct)
 - All subsequent phases are deterministic and structured
-- Autonomy is bounded — max 7 LLM calls per run
+- Autonomy is bounded — max 7 LLM calls per run (Competitor Moves)
 - The system always produces output, surfacing uncertainty when data is insufficient
 - Every decision is logged for observability and debugging
 
@@ -131,7 +139,7 @@ START
 END
 ```
 
-### LLM Call Budget (Per Run)
+### LLM Call Budget — Competitor Moves (Per Run)
 
 | Step | Calls |
 |---|---|
@@ -139,6 +147,26 @@ END
 | Per-signal evaluation | max 5 |
 | Executive brief generation | 1 |
 | **Total** | **max 7** |
+
+---
+
+## Workflow — MVP V1.1 (Business Opportunities)
+```
+START
+  → Input Validation         (deterministic — sector name check)
+  → Query Builder            (deterministic — no LLM)
+  → Opportunity Collection   (TED EU tenders + Tavily private/pre-tender signals)
+  → Opportunity Evaluation   (LLM + RAG — tenders, private signals, pre-tender signals)
+  → Opportunity Brief        (LLM — single call, ranked by urgency and fit)
+  → Notify N8N               (non-blocking — triggers email delivery)
+  → Return brief to UI
+END
+```
+
+Signal types collected in V1.1:
+- **Tenders** — live EU public procurement notices via TED Open Data API
+- **Private opportunities** — commercial expansion signals via Tavily (press, trade press)
+- **Pre-tender signals** — budget approvals, city council decisions, EU fund allocations (3–12 month positioning window)
 
 ---
 
@@ -188,12 +216,12 @@ It answers: *"Given who we are and where we want to go, does this signal matter?
 
 ## MCP Tools
 
-| Tool | API | Purpose | Version |
+| Tool | API | Purpose | Status |
 |---|---|---|---|
 | `tavily.py` | Tavily API | Web search — primary signal discovery | V1.0 |
 | `newsapi.py` | NewsAPI | News articles — signal discovery | V1.0 |
 | `hackernews.py` | HN Algolia API | Technology signals — no API key required | V1.0 |
-| `ted.py` | TED EU API | EU public tenders — business opportunities | V1.1 |
+| `ted.py` | TED EU Open Data API | EU public tenders — business opportunities | V1.1 |
 
 All tools are defined using `@mcp.tool()` decorator — in-process MCP implementation.
 See `architecture_decisions.md` Decision 12 for rationale.
@@ -204,19 +232,35 @@ See `architecture_decisions.md` Decision 12 for rationale.
 
 | Method | Endpoint | Purpose |
 |---|---|---|
-| `GET` | `/` | Service info and available endpoints |
+| `GET` | `/` | Overview landing page |
+| `GET` | `/tool` | Intelligence tool UI |
+| `GET` | `/slides` | Presentation slides |
+| `GET` | `/ui` | Alias for `/tool` — backward compatibility |
+| `GET` | `/api/info` | Service info and available endpoints (JSON) |
 | `GET` | `/health` | Verify Pinecone, LLM, and registry status |
 | `POST` | `/run` | Trigger the LangGraph agent — returns intelligence brief |
 | `POST` | `/notify` | Trigger N8N webhook for email delivery |
-| `GET` | `/ui` | Serve the HTML interface |
 | `GET` | `/docs` | Swagger UI — interactive API documentation |
 
 ### POST /run — Request
+
+For **Competitor Moves**, `subject` is the competitor name.
+For **Business Opportunities**, `subject` is the sector name.
+
 ```json
 {
-  "company": "Acrelec",
+  "subject": "Acrelec",
   "intelligence_type": "Competitor Moves",
   "time_range_days": 7,
+  "notify_email": "user@example.com"
+}
+```
+
+```json
+{
+  "subject": "Smart Cities",
+  "intelligence_type": "Business Opportunities",
+  "time_range_days": 30,
   "notify_email": "user@example.com"
 }
 ```
@@ -224,14 +268,18 @@ See `architecture_decisions.md` Decision 12 for rationale.
 ### POST /run — Response
 ```json
 {
-  "competitor": "Acrelec",
+  "run_id": "run_20260306_100000_acrelec",
+  "subject": "Acrelec",
   "intelligence_type": "Competitor Moves",
   "time_range_days": 7,
   "signals": [...],
+  "tenders": [...],
+  "private_opportunities": [...],
+  "pretender_opportunities": [...],
   "executive_takeaway": "...",
+  "final_brief": "...",
   "llm_calls_made": 5,
-  "elapsed_seconds": 34.2,
-  "generated_at": "2026-03-04T10:00:00Z",
+  "generated_at": "2026-03-06T10:00:00Z",
   "notify_email": "user@example.com"
 }
 ```
@@ -258,9 +306,9 @@ SendGrid      →  Email delivery (free tier)
 ```
 strategic_radar/
 ├── agent/
-│   ├── graph.py                  ← LangGraph workflow definition
-│   ├── nodes.py                  ← 6 node implementations
-│   ├── state.py                  ← TypedDict state schema
+│   ├── graph.py                  ← LangGraph workflow definition (V1.0 + V1.1 branches)
+│   ├── nodes.py                  ← Node implementations (6 V1.0 nodes + 3 V1.1 nodes)
+│   ├── state.py                  ← TypedDict state schema (V1.0 + V1.1 fields)
 │   └── tools/
 │       ├── __init__.py
 │       ├── utils.py              ← Shared FastMCP instance + source classifier
@@ -278,9 +326,11 @@ strategic_radar/
 │       ├── competitor_registry.json
 │       └── technology_watchlist.md
 ├── api/
-│   ├── main.py                   ← FastAPI server + /run + /health + /notify
+│   ├── main.py                   ← FastAPI server v1.1.0
 │   └── static/
-│       └── index.html            ← Single-page HTML UI
+│       ├── index.html            ← Overview landing page
+│       ├── tool.html             ← Intelligence tool UI (V1.0 + V1.1)
+│       └── slides.html           ← Presentation slides
 ├── core/
 │   ├── __init__.py
 │   └── logging_config.py         ← Centralised logging, daily rotating files
@@ -294,6 +344,7 @@ strategic_radar/
 ├── Procfile                      ← Railway start command
 ├── railway.json                  ← Railway deployment config
 ├── requirements.txt
+├── casestudy.md                  ← Ironhack submission case study
 ├── architecture_decisions.md
 ├── product_backlog.md
 ├── project_summary.md
@@ -334,7 +385,7 @@ python rag/ingest.py
 uvicorn api.main:app --reload --port 8000
 
 # 7. Open the UI
-# http://localhost:8000/ui
+# http://localhost:8000/tool
 ```
 
 ---
@@ -395,19 +446,19 @@ Copy `.env.example` to `.env` and fill in your keys. Never commit `.env`.
 
 ---
 
-## What Is NOT in MVP v1.0
+## What Is NOT in MVP v1.1
 
-All of the following are documented in `product_backlog.md` with effort estimates:
+All of the following are documented in `product_roadmap.md` with version targets and effort estimates:
 
-- Business Opportunities branch (TED EU tenders) — V1.1
 - Technology Developments branch — V1.2
-- Multi-competitor runs
+- Multi-competitor / multi-sector runs in a single request
 - Scheduling via UI
 - Cross-signal correlation and deduplication
 - Trend synthesis across time windows
 - Editable strategy and competitor registry via UI
 - Report history viewer
 - Tool performance dashboard
+- User feedback loop on signal quality
 
 ---
 

@@ -1,3 +1,4 @@
+# Version 1.1 — Final demo delivery to Ironhack 2026-03-06
 # core/logging_config.py
 # Centralised logging configuration for Strategic Radar.
 # Import get_logger() in every module — never configure logging elsewhere.

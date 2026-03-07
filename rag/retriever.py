@@ -1,3 +1,4 @@
+# Version 1.1 — Final demo delivery to Ironhack 2026-03-06
 # rag/retriever.py
 # Pinecone query layer — retrieves relevant KB chunks for a given query.
 # Called by LangGraph nodes during signal evaluation.

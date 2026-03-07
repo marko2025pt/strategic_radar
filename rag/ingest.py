@@ -1,3 +1,4 @@
+# Version 1.1 — Final demo delivery to Ironhack 2026-03-06
 # ingest.py
 # Chunks, embeds, and upserts all KB documents into Pinecone.
 # Run once to initialise the knowledge base. Re-running is safe — idempotent.

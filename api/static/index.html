@@ -1,3 +1,4 @@
+<!-- Version 1.1 — Final demo delivery to Ironhack 2026-03-06 -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -8,7 +9,6 @@
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Open+Sans:ital,wght@0,300;0,400;0,600;1,400&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
     :root {
       --navy:      #1a2340;
       --navy-dark: #0d1021;
@@ -19,9 +19,7 @@
       --border:    rgba(255,255,255,0.08);
       --transition: 200ms cubic-bezier(0.4,0,0.2,1);
     }
-
     html { font-size: 16px; }
-
     body {
       font-family: 'Open Sans', sans-serif;
       background: var(--navy-dark);
@@ -42,258 +40,153 @@
       top: 0;
       z-index: 100;
     }
-
     .header-inner {
-      max-width: 1120px;
-      width: 100%;
-      margin: 0 auto;
-      padding: 0 32px;
-      display: flex;
-      align-items: stretch;
-      justify-content: space-between;
+      max-width: 1120px; width: 100%; margin: 0 auto; padding: 0 32px;
+      display: flex; align-items: stretch; justify-content: space-between;
     }
-
-    .logo {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-    }
-
+    .logo { display: flex; align-items: center; gap: 14px; }
     .logo-mark {
-      width: 36px; height: 36px;
-      background: var(--orange);
-      border-radius: 4px;
+      width: 36px; height: 36px; background: var(--orange); border-radius: 4px;
       display: flex; align-items: center; justify-content: center;
     }
-
     .logo-name {
-      font-family: 'Montserrat', sans-serif;
-      font-size: 1.05rem; font-weight: 700;
-      letter-spacing: 0.04em;
-      color: var(--white);
-      text-transform: uppercase;
+      font-family: 'Montserrat', sans-serif; font-size: 1.05rem; font-weight: 700;
+      letter-spacing: 0.04em; color: var(--white); text-transform: uppercase;
     }
-
-    /* ── NAV TABS ── */
-    .nav-tabs {
-      display: flex;
-      align-items: stretch;
-      gap: 2px;
-    }
-
-    .nav-tab {
-      font-family: 'Montserrat', sans-serif;
-      font-size: 0.62rem; font-weight: 700;
+    .logo-sub {
+      font-size: 0.62rem; font-weight: 600; color: rgba(255,255,255,0.35);
       letter-spacing: 0.1em; text-transform: uppercase;
-      color: rgba(255,255,255,0.35);
-      background: none; border: none;
-      padding: 0 18px;
-      cursor: pointer;
-      border-bottom: 2px solid transparent;
-      margin-bottom: -3px;
-      text-decoration: none;
+      border-left: 1px solid rgba(255,255,255,0.12); padding-left: 12px; margin-left: 2px;
+    }
+    .nav-tabs { display: flex; align-items: stretch; gap: 2px; }
+    .nav-tab {
+      font-family: 'Montserrat', sans-serif; font-size: 0.62rem; font-weight: 700;
+      letter-spacing: 0.1em; text-transform: uppercase; color: rgba(255,255,255,0.35);
+      background: none; border: none; padding: 0 18px; cursor: pointer;
+      border-bottom: 2px solid transparent; margin-bottom: -3px; text-decoration: none;
       display: flex; align-items: center; gap: 6px;
       transition: color var(--transition), background var(--transition);
     }
-    .nav-tab:hover {
-      color: rgba(255,255,255,0.75);
-      background: rgba(255,255,255,0.04);
+    .nav-tab:hover { color: rgba(255,255,255,0.75); background: rgba(255,255,255,0.04); }
+    .nav-tab.active { color: var(--white); border-bottom-color: var(--orange); }
+
+    /* ── DISCLAIMER ── */
+    .disclaimer-wrap {
+      display: flex; align-items: center; gap: 6px;
+      border-left: 1px solid rgba(255,255,255,0.12); padding-left: 14px; margin-left: 4px;
+      position: relative;
     }
-    .nav-tab.active {
-      color: var(--white);
-      border-bottom-color: var(--orange);
+    .disclaimer-trigger {
+      font-family: 'Montserrat', sans-serif; font-size: 0.55rem; font-weight: 700;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      color: rgba(255,255,255,0.25); cursor: pointer;
+      display: flex; align-items: center; gap: 4px;
+      transition: color var(--transition);
+      white-space: nowrap;
     }
+    .disclaimer-trigger:hover { color: rgba(255,255,255,0.55); }
+    .disclaimer-arrow { font-size: 0.55rem; transition: transform var(--transition); display: inline-block; }
+    .disclaimer-popup {
+      display: none; position: absolute; top: calc(100% + 12px); right: 0;
+      background: #1a2340; border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 5px; padding: 14px 16px; width: 320px;
+      font-size: 0.7rem; color: rgba(255,255,255,0.6); line-height: 1.7;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.4); z-index: 200;
+    }
+    .disclaimer-popup.open { display: block; }
+    .disclaimer-arrow.open { transform: rotate(180deg); }
 
     /* ── MAIN ── */
     main {
-      flex: 1;
-      max-width: 860px;
-      width: 100%;
-      margin: 0 auto;
-      padding: 80px 32px 100px;
-      display: flex;
-      flex-direction: column;
-      gap: 64px;
+      flex: 1; max-width: 860px; width: 100%;
+      margin: 0 auto; padding: 80px 32px 100px;
+      display: flex; flex-direction: column; gap: 64px;
     }
 
     /* ── HERO ── */
-    .hero {
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
+    .hero { display: flex; flex-direction: column; gap: 20px; max-width: 640px; }
+    .hero-title {
+      font-family: 'Montserrat', sans-serif; font-size: 2.8rem; font-weight: 800;
+      line-height: 1.1; letter-spacing: -0.02em;
+    }
+    .hero-title span { color: var(--orange); }
+    .hero-divider { width: 48px; height: 3px; background: var(--orange); border-radius: 2px; }
+
+    /* ── CTA HERO ── */
+    .hero-cta {
+      background: rgba(232,66,14,0.08); border: 1px solid rgba(232,66,14,0.2);
+      border-left: 4px solid var(--orange); border-radius: 5px;
+      padding: 20px 24px; display: flex; flex-direction: column; gap: 10px;
       max-width: 640px;
     }
-
-    .hero-eyebrow {
-      font-family: 'Montserrat', sans-serif;
-      font-size: 0.65rem; font-weight: 700;
-      letter-spacing: 0.2em; text-transform: uppercase;
-      color: var(--orange);
+    .hero-cta-label {
+      font-family: 'Montserrat', sans-serif; font-size: 0.6rem; font-weight: 700;
+      letter-spacing: 0.16em; text-transform: uppercase; color: var(--orange);
     }
-
-    .hero-title {
-      font-family: 'Montserrat', sans-serif;
-      font-size: 2.8rem; font-weight: 800;
-      line-height: 1.1;
-      letter-spacing: -0.02em;
+    .hero-cta-text {
+      font-size: 1rem; font-weight: 600; color: var(--white); line-height: 1.5;
     }
-
-    .hero-title span { color: var(--orange); }
-
-    .hero-divider {
-      width: 48px; height: 3px;
-      background: var(--orange);
-      border-radius: 2px;
-    }
+    .hero-cta-buttons { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 4px; }
 
     /* ── NARRATIVE ── */
-    .narrative {
-      display: flex;
-      flex-direction: column;
-      gap: 40px;
-    }
-
-    .narrative-block {
-      display: flex;
-      gap: 24px;
-      align-items: flex-start;
-    }
-
+    .narrative { display: flex; flex-direction: column; gap: 40px; }
+    .narrative-block { display: flex; gap: 24px; align-items: flex-start; }
     .narrative-marker {
-      flex-shrink: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 0;
-      padding-top: 4px;
+      flex-shrink: 0; display: flex; flex-direction: column;
+      align-items: center; gap: 0; padding-top: 4px;
     }
-
-    .marker-dot {
-      width: 10px; height: 10px;
-      border-radius: 50%;
-      background: var(--orange);
-      flex-shrink: 0;
-    }
-
-    .marker-line {
-      width: 1px;
-      flex: 1;
-      min-height: 40px;
-      background: rgba(232,66,14,0.2);
-      margin-top: 6px;
-    }
-
+    .marker-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--orange); flex-shrink: 0; }
+    .marker-line { width: 1px; flex: 1; min-height: 40px; background: rgba(232,66,14,0.2); margin-top: 6px; }
     .narrative-block:last-child .marker-line { display: none; }
-
-    .narrative-content {}
-
     .narrative-label {
-      font-family: 'Montserrat', sans-serif;
-      font-size: 0.58rem; font-weight: 700;
-      letter-spacing: 0.16em; text-transform: uppercase;
-      color: var(--orange);
-      margin-bottom: 8px;
-      opacity: 0.8;
+      font-family: 'Montserrat', sans-serif; font-size: 0.58rem; font-weight: 700;
+      letter-spacing: 0.16em; text-transform: uppercase; color: var(--orange);
+      margin-bottom: 8px; opacity: 0.8;
     }
-
     .narrative-heading {
-      font-family: 'Montserrat', sans-serif;
-      font-size: 1.1rem; font-weight: 700;
-      color: var(--white);
-      line-height: 1.3;
-      margin-bottom: 10px;
+      font-family: 'Montserrat', sans-serif; font-size: 1.1rem; font-weight: 700;
+      color: var(--white); line-height: 1.3; margin-bottom: 10px;
     }
-
     .narrative-text {
-      font-size: 0.92rem;
-      color: rgba(255,255,255,0.6);
-      line-height: 1.8;
-      max-width: 580px;
+      font-size: 0.92rem; color: rgba(255,255,255,0.6); line-height: 1.8; max-width: 580px;
     }
-
-    .narrative-text strong {
-      color: rgba(255,255,255,0.85);
-      font-weight: 600;
-    }
-
-    /* Point A — warning tone */
+    .narrative-text strong { color: rgba(255,255,255,0.85); font-weight: 600; }
     .narrative-block.point-a .marker-dot { background: rgba(192,57,43,0.8); }
     .narrative-block.point-a .marker-line { background: rgba(192,57,43,0.15); }
     .narrative-block.point-a .narrative-label { color: #e05a4a; }
     .narrative-block.point-a .narrative-heading { color: rgba(255,255,255,0.75); }
-
-    /* Point B — positive tone */
     .narrative-block.point-b .marker-dot { background: #2d8a4e; }
     .narrative-block.point-b .marker-line { background: rgba(45,138,78,0.2); }
     .narrative-block.point-b .narrative-label { color: #4ecb80; }
 
-    /* ── CTA ── */
-    .cta {
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-      padding-top: 8px;
-    }
-
-    .cta-label {
-      font-family: 'Montserrat', sans-serif;
-      font-size: 0.62rem; font-weight: 700;
-      letter-spacing: 0.14em; text-transform: uppercase;
-      color: rgba(255,255,255,0.3);
-    }
-
-    .cta-buttons {
-      display: flex;
-      gap: 14px;
-      flex-wrap: wrap;
-    }
-
+    /* ── BUTTONS ── */
     .btn-primary {
-      background: var(--orange);
-      color: var(--white);
-      border: none; border-radius: 4px;
-      padding: 14px 28px;
-      font-family: 'Montserrat', sans-serif;
-      font-size: 0.78rem; font-weight: 700;
+      background: var(--orange); color: var(--white);
+      border: none; border-radius: 4px; padding: 14px 28px;
+      font-family: 'Montserrat', sans-serif; font-size: 0.78rem; font-weight: 700;
       letter-spacing: 0.08em; text-transform: uppercase;
       cursor: pointer; text-decoration: none;
       display: inline-flex; align-items: center; gap: 8px;
       transition: background var(--transition), box-shadow var(--transition), transform 80ms;
     }
-    .btn-primary:hover {
-      background: #c93509;
-      box-shadow: 0 4px 16px rgba(232,66,14,0.4);
-    }
+    .btn-primary:hover { background: #c93509; box-shadow: 0 4px 16px rgba(232,66,14,0.4); }
     .btn-primary:active { transform: scale(0.99); }
-
     .btn-secondary {
-      background: transparent;
-      color: rgba(255,255,255,0.6);
-      border: 1px solid rgba(255,255,255,0.15);
-      border-radius: 4px;
-      padding: 14px 28px;
-      font-family: 'Montserrat', sans-serif;
-      font-size: 0.78rem; font-weight: 700;
+      background: transparent; color: rgba(255,255,255,0.6);
+      border: 1px solid rgba(255,255,255,0.15); border-radius: 4px; padding: 14px 28px;
+      font-family: 'Montserrat', sans-serif; font-size: 0.78rem; font-weight: 700;
       letter-spacing: 0.08em; text-transform: uppercase;
       cursor: pointer; text-decoration: none;
       display: inline-flex; align-items: center; gap: 8px;
       transition: border-color var(--transition), color var(--transition), background var(--transition);
     }
-    .btn-secondary:hover {
-      border-color: rgba(255,255,255,0.4);
-      color: var(--white);
-      background: rgba(255,255,255,0.05);
-    }
+    .btn-secondary:hover { border-color: rgba(255,255,255,0.4); color: var(--white); background: rgba(255,255,255,0.05); }
 
     /* ── FOOTER ── */
     footer {
-      border-top: 1px solid rgba(255,255,255,0.06);
-      padding: 24px 32px;
-      text-align: center;
-      font-size: 0.7rem;
-      color: rgba(255,255,255,0.2);
-      font-family: 'Montserrat', sans-serif;
-      letter-spacing: 0.06em;
+      border-top: 1px solid rgba(255,255,255,0.06); padding: 24px 32px;
+      text-align: center; font-size: 0.7rem; color: rgba(255,255,255,0.2);
+      font-family: 'Montserrat', sans-serif; letter-spacing: 0.06em;
     }
   </style>
 </head>
@@ -311,26 +204,34 @@
         </svg>
       </div>
       <span class="logo-name">Strategic Radar</span>
+      <span class="logo-sub">PARTTEAM & OEMKIOSKS — Case Study</span>
+      <div class="disclaimer-wrap">
+        <div class="disclaimer-trigger" onclick="toggleDisclaimer()">
+          Disclaimer <span class="disclaimer-arrow" id="disc-arrow">▾</span>
+        </div>
+        <div class="disclaimer-popup" id="disc-popup">
+          Strategic Radar uses PARTTEAM &amp; OEMKIOSKS as a case study for demonstration purposes only.
+          All information used in this project was sourced from publicly available sources. This project
+          was created as part of the Ironhack AI Consulting Bootcamp learning experience and has no
+          affiliation with or endorsement from PARTTEAM &amp; OEMKIOSKS.<br><br>
+          Strategic objectives referenced in the system are illustrative — informed by public information
+          but not representative of the company's actual strategy.<br><br>
+          For additional context on assumptions, sources, and methodology, please refer to the
+          <a href="https://github.com/marko2025pt/strategic_radar/blob/main/casestudy.md" target="_blank" style="color:inherit;text-decoration:underline;">Case Study</a> section.
+        </div>
+      </div>
     </div>
     <nav class="nav-tabs">
       <a class="nav-tab active" href="/">
-        <svg width="10" height="10" viewBox="0 0 16 16" fill="none">
-          <path d="M2 8L8 2L14 8V14H10V10H6V14H2V8Z" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linejoin="round"/>
-        </svg>
+        <svg width="10" height="10" viewBox="0 0 16 16" fill="none"><path d="M2 8L8 2L14 8V14H10V10H6V14H2V8Z" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linejoin="round"/></svg>
         Overview
       </a>
       <a class="nav-tab" href="/slides">
-        <svg width="10" height="10" viewBox="0 0 16 16" fill="none">
-          <rect x="1" y="2" width="14" height="10" rx="1" stroke="currentColor" stroke-width="1.5" fill="none"/>
-          <line x1="5" y1="14" x2="11" y2="14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-          <line x1="8" y1="12" x2="8" y2="14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-        </svg>
+        <svg width="10" height="10" viewBox="0 0 16 16" fill="none"><rect x="1" y="2" width="14" height="10" rx="1" stroke="currentColor" stroke-width="1.5" fill="none"/><line x1="5" y1="14" x2="11" y2="14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="8" y1="12" x2="8" y2="14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
         Presentation
       </a>
       <a class="nav-tab" href="/tool" target="_blank">
-        <svg width="10" height="10" viewBox="0 0 16 16" fill="none">
-          <polygon points="3,2 13,8 3,14" fill="currentColor"/>
-        </svg>
+        <svg width="10" height="10" viewBox="0 0 16 16" fill="none"><polygon points="3,2 13,8 3,14" fill="currentColor"/></svg>
         Tool
       </a>
     </nav>
@@ -341,40 +242,28 @@
 
   <!-- HERO -->
   <div class="hero">
-    <div class="hero-eyebrow">Strategic Intelligence · PARTTEAM & OEMKIOSKS CASE STUDY</div>
     <div class="hero-title">Your market doesn't<br>wait for your <span>next meeting.</span></div>
     <div class="hero-divider"></div>
   </div>
 
   <!-- NARRATIVE -->
   <div class="narrative">
-
-    <!-- SITUATION -->
     <div class="narrative-block">
-      <div class="narrative-marker">
-        <div class="marker-dot"></div>
-        <div class="marker-line"></div>
-      </div>
+      <div class="narrative-marker"><div class="marker-dot"></div><div class="marker-line"></div></div>
       <div class="narrative-content">
         <div class="narrative-label">The Situation</div>
         <div class="narrative-heading">Markets move faster than your intelligence cycle.</div>
         <div class="narrative-text">
           Competitors announce acquisitions on Tuesday. Tenders close on Thursday.
           A city council approves a €2M smart mobility budget — and the positioning
-          window opens and closes before anyone on your team even sees the signal.
-          <br><br>
+          window opens and closes before anyone on your team even sees the signal.<br><br>
           Good strategic intelligence exists. It's just scattered across dozens of sources,
           buried in noise, and nobody has time to read it all.
         </div>
       </div>
     </div>
-
-    <!-- ROLE -->
     <div class="narrative-block">
-      <div class="narrative-marker">
-        <div class="marker-dot"></div>
-        <div class="marker-line"></div>
-      </div>
+      <div class="narrative-marker"><div class="marker-dot"></div><div class="marker-line"></div></div>
       <div class="narrative-content">
         <div class="narrative-label">The Reality</div>
         <div class="narrative-heading">Your team is making decisions on incomplete information.</div>
@@ -387,13 +276,8 @@
         </div>
       </div>
     </div>
-
-    <!-- POINT A -->
     <div class="narrative-block point-a">
-      <div class="narrative-marker">
-        <div class="marker-dot"></div>
-        <div class="marker-line"></div>
-      </div>
+      <div class="narrative-marker"><div class="marker-dot"></div><div class="marker-line"></div></div>
       <div class="narrative-content">
         <div class="narrative-label">If nothing changes</div>
         <div class="narrative-heading">You keep winning on instinct — until you don't.</div>
@@ -405,45 +289,33 @@
         </div>
       </div>
     </div>
-
-    <!-- POINT B -->
     <div class="narrative-block point-b">
-      <div class="narrative-marker">
-        <div class="marker-dot"></div>
-        <div class="marker-line"></div>
-      </div>
+      <div class="narrative-marker"><div class="marker-dot"></div><div class="marker-line"></div></div>
       <div class="narrative-content">
         <div class="narrative-label">The Ideal</div>
         <div class="narrative-heading">Every Monday morning, leadership already knows what matters.</div>
         <div class="narrative-text">
           Competitor moves ranked by strategic impact — not by publish date.
           Live tenders surfaced before the deadline pressure starts.
-          Pre-tender signals caught months early, when positioning is still possible.
-          <br><br>
+          Pre-tender signals caught months early, when positioning is still possible.<br><br>
           One page. Ranked by impact. With a recommended action.
           Delivered before the week begins — without anyone having to look for it.
         </div>
       </div>
     </div>
-
   </div>
 
-  <!-- CTA -->
-  <div class="cta">
-    <div class="cta-label">Explore the project</div>
-    <div class="cta-buttons">
+  <!-- CTA BLOCK -->
+  <div class="hero-cta">
+    <div class="hero-cta-label">Explore the project</div>
+    <div class="hero-cta-text">See how Strategic Radar turns market signals into strategic clarity — autonomous, context-aware, delivered before Monday morning.</div>
+    <div class="hero-cta-buttons">
       <a class="btn-primary" href="/slides">
-        <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-          <rect x="1" y="2" width="14" height="10" rx="1" stroke="currentColor" stroke-width="1.5" fill="none"/>
-          <line x1="5" y1="14" x2="11" y2="14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-          <line x1="8" y1="12" x2="8" y2="14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-        </svg>
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="1" y="2" width="14" height="10" rx="1" stroke="currentColor" stroke-width="1.5" fill="none"/><line x1="5" y1="14" x2="11" y2="14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="8" y1="12" x2="8" y2="14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
         View Presentation
       </a>
       <a class="btn-secondary" href="/tool">
-        <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-          <polygon points="3,2 13,8 3,14" fill="currentColor"/>
-        </svg>
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><polygon points="3,2 13,8 3,14" fill="currentColor"/></svg>
         Run the Tool
       </a>
     </div>
@@ -455,5 +327,20 @@
   Marco Martins &nbsp;·&nbsp; Strategic Radar &nbsp;·&nbsp; © 2026 &nbsp;·&nbsp; Ironhack AI Consulting
 </footer>
 
+<script>
+  function toggleDisclaimer() {
+    const popup = document.getElementById('disc-popup');
+    const arrow = document.getElementById('disc-arrow');
+    popup.classList.toggle('open');
+    arrow.classList.toggle('open');
+  }
+  document.addEventListener('click', function(e) {
+    const wrap = document.querySelector('.disclaimer-wrap');
+    if (!wrap.contains(e.target)) {
+      document.getElementById('disc-popup').classList.remove('open');
+      document.getElementById('disc-arrow').classList.remove('open');
+    }
+  });
+</script>
 </body>
 </html>

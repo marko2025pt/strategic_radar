@@ -1,3 +1,4 @@
+<!-- Version 1.1 — Final demo delivery to Ironhack 2026-03-06 -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -26,8 +27,8 @@
       display: flex; flex-direction: column; align-items: center;
       padding: 0 0 60px; min-height: 100vh;
     }
-    img { max-width: 100%; height: auto; }
 
+    /* ── SITE HEADER ── */
     .site-header {
       width: 100%; background: var(--navy-dark);
       border-bottom: 3px solid var(--orange);
@@ -52,6 +53,30 @@
       letter-spacing: 0.1em; text-transform: uppercase;
       border-left: 1px solid rgba(255,255,255,0.12); padding-left: 12px; margin-left: 2px;
     }
+    .disclaimer-wrap {
+      display: flex; align-items: center; gap: 6px;
+      border-left: 1px solid rgba(255,255,255,0.12); padding-left: 14px; margin-left: 4px;
+      position: relative;
+    }
+    .disclaimer-trigger {
+      font-family: 'Montserrat', sans-serif; font-size: 0.55rem; font-weight: 700;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      color: rgba(255,255,255,0.25); cursor: pointer;
+      display: flex; align-items: center; gap: 4px;
+      transition: color var(--transition); white-space: nowrap;
+    }
+    .disclaimer-trigger:hover { color: rgba(255,255,255,0.55); }
+    .disclaimer-arrow { font-size: 0.55rem; transition: transform var(--transition); display: inline-block; }
+    .disclaimer-popup {
+      display: none; position: absolute; top: calc(100% + 12px); left: 0;
+      background: #1a2340; border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 5px; padding: 14px 16px; width: 320px;
+      font-size: 0.7rem; color: rgba(255,255,255,0.6); line-height: 1.7;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.4); z-index: 200;
+    }
+    .disclaimer-popup.open { display: block; }
+    .disclaimer-arrow.open { transform: rotate(180deg); }
+
     .nav-tabs { display: flex; align-items: stretch; gap: 2px; }
     .nav-tab {
       font-family: 'Montserrat', sans-serif; font-size: 0.62rem; font-weight: 700;
@@ -64,6 +89,7 @@
     .nav-tab:hover { color: rgba(255,255,255,0.75); background: rgba(255,255,255,0.04); }
     .nav-tab.active { color: var(--white); border-bottom-color: var(--orange); }
 
+    /* ── CONTROLS ── */
     .controls {
       display: flex; gap: 8px; flex-wrap: wrap;
       justify-content: center; margin-bottom: 20px; padding: 0 16px;
@@ -78,6 +104,7 @@
     .ctrl-btn:hover { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.8); }
     .ctrl-btn.active { background: var(--orange); border-color: var(--orange); color: var(--white); }
 
+    /* ── SLIDE SHELL ── */
     .slide-wrap { width: 100%; max-width: 960px; padding: 0 16px; }
     .slide {
       width: 100%; aspect-ratio: 16/9; background: var(--white);
@@ -101,7 +128,6 @@
       letter-spacing: 0.1em; text-transform: uppercase; color: rgba(255,255,255,0.4);
       white-space: nowrap;
     }
-
     .slide-body {
       flex: 1; display: flex; flex-direction: column;
       padding: 3.5% 5%; overflow: hidden;
@@ -110,7 +136,6 @@
       font-size: 0.82rem; color: var(--ink-soft); line-height: 1.6;
       margin-bottom: 3.5%; max-width: 88%; font-style: italic;
     }
-
     .slide-footer {
       background: var(--navy-dark); height: 6%;
       display: flex; align-items: center; justify-content: space-between;
@@ -122,6 +147,7 @@
     }
     .slide-page { font-size: 0.48rem; color: rgba(255,255,255,0.25); font-family: 'Montserrat', sans-serif; font-weight: 700; }
 
+    /* ── NAV ── */
     .nav { display: flex; align-items: center; gap: 12px; margin-top: 20px; }
     .nav-btn {
       background: var(--orange); color: white; border: none; border-radius: 4px;
@@ -136,7 +162,7 @@
       color: rgba(255,255,255,0.3); letter-spacing: 0.1em; text-transform: uppercase;
     }
 
-    /* ── PROBLEM / SOLUTION CARDS — navy dark ── */
+    /* ── PROBLEM / SOLUTION CARDS ── */
     .bullet-list { display: flex; flex-direction: column; gap: 2%; flex: 1; }
     .bullet-card {
       background: var(--navy-dark); border-radius: 5px;
@@ -152,11 +178,11 @@
     .arch-flow { display: flex; flex-direction: column; gap: 4px; flex: 1; justify-content: center; }
     .arch-row { display: flex; align-items: center; gap: 12px; }
     .arch-badge {
-      font-family: 'Montserrat', sans-serif; font-size: 0.72rem; font-weight: 700;
+      font-family: 'Montserrat', sans-serif; font-size: 0.8rem; font-weight: 700;
       letter-spacing: 0.06em; text-transform: uppercase;
       background: var(--navy-dark); color: var(--orange);
-      border-radius: 4px; padding: 7px 14px;
-      white-space: nowrap; min-width: 200px; text-align: center;
+      border-radius: 4px; padding: 9px 16px;
+      white-space: nowrap; min-width: 220px; text-align: center;
       border: 1px solid rgba(255,255,255,0.1);
     }
     .arch-arrow { font-size: 0.85rem; color: var(--orange); opacity: 0.7; }
@@ -185,67 +211,63 @@
     }
     .kb-footer-highlight { font-size: 0.65rem; font-weight: 700; color: var(--orange); font-style: italic; }
 
-    /* ── PIPELINE ── */
+    /* ── PIPELINE — dark theme ── */
     .pipeline-outer { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 8px; }
-    .pipeline-section { display: flex; flex-direction: column; gap: 3px; }
-    .pipeline-row-label {
-      font-family: 'Montserrat', sans-serif; font-size: 0.52rem; font-weight: 700;
-      letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-muted);
-    }
-
-    .cond-row {
-      display: flex; align-items: center; justify-content: center;
-      gap: 8px; margin: 2px 0;
-    }
+    .cond-row { display: flex; align-items: center; justify-content: center; gap: 8px; margin: 2px 0; }
     .cond-box {
       background: var(--orange); color: var(--white);
       font-family: 'Montserrat', sans-serif; font-size: 0.52rem; font-weight: 700;
       letter-spacing: 0.06em; text-transform: uppercase;
       padding: 4px 14px; border-radius: 20px;
     }
-    .cond-line {
-      flex: 1; height: 1.5px; background: var(--orange); opacity: 0.4; max-width: 60px;
-    }
-
+    .cond-line { flex: 1; height: 1.5px; background: var(--orange); opacity: 0.4; max-width: 60px; }
     .branches-wrap { display: flex; gap: 12px; }
     .branch { display: flex; flex-direction: column; gap: 3px; flex: 1; }
     .branch-label {
       font-family: 'Montserrat', sans-serif; font-size: 0.5rem; font-weight: 700;
       letter-spacing: 0.08em; text-transform: uppercase;
-      color: var(--white); padding: 2px 8px; border-radius: 3px;
-      align-self: flex-start;
+      color: var(--white); padding: 2px 8px; border-radius: 3px; align-self: flex-start;
     }
     .branch-label.orange { background: var(--orange); }
     .branch-label.blue   { background: var(--blue); }
 
+    /* Dark pipeline row */
     .pipeline-row {
       display: flex; align-items: center; gap: 0;
-      background: #f8f9fc; border: 1px solid var(--border);
+      background: var(--navy-dark); border: 1px solid rgba(255,255,255,0.08);
       border-radius: 6px; padding: 8px 10px; position: relative;
     }
-    .pipeline-row::before {
-      content: ''; position: absolute; inset: 0; border-radius: 6px;
-      background-image: radial-gradient(circle, #c8cfe0 1px, transparent 1px);
-      background-size: 12px 12px; opacity: 0.3; pointer-events: none;
+    .pipeline-row-label {
+      font-family: 'Montserrat', sans-serif; font-size: 0.52rem; font-weight: 700;
+      letter-spacing: 0.1em; text-transform: uppercase; color: rgba(255,255,255,0.4);
     }
     .pnode { display: flex; flex-direction: column; align-items: center; gap: 3px; position: relative; z-index: 1; }
     .pnode-card {
-      background: var(--white); border: 1px solid var(--border); border-radius: 6px;
+      background: var(--white); border: 1px solid rgba(255,255,255,0.2); border-radius: 6px;
       width: 62px; height: 48px; display: flex; align-items: center; justify-content: center;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.08); font-size: 1.1rem;
+      font-size: 1.1rem; box-shadow: 0 1px 4px rgba(0,0,0,0.2);
     }
     .pnode-card.orange { border-top: 2px solid var(--orange); }
     .pnode-card.blue   { border-top: 2px solid var(--blue); }
     .pnode-card.green  { border-top: 2px solid #2d8a4e; }
     .pnode-label {
       font-family: 'Montserrat', sans-serif; font-size: 0.52rem; font-weight: 700;
-      color: var(--ink-soft); text-align: center; max-width: 66px; line-height: 1.3;
+      color: rgba(255,255,255,0.85); text-align: center; max-width: 66px; line-height: 1.25;
     }
-    .pnode-sub { font-size: 0.46rem; color: var(--ink-muted); text-align: center; max-width: 66px; line-height: 1.2; }
     .pconn { display: flex; align-items: center; position: relative; z-index: 1; flex-shrink: 0; }
-    .pconn-dot { width: 6px; height: 6px; border-radius: 50%; border: 1.5px solid #aab0c0; background: var(--white); }
-    .pconn-line { height: 1.5px; background: #aab0c0; width: 10px; }
-    .pconn-arrow { font-size: 0.5rem; color: #aab0c0; line-height: 1; }
+    .pconn-dot { width: 6px; height: 6px; border-radius: 50%; border: 1.5px solid rgba(255,255,255,0.2); background: transparent; }
+    .pconn-line { height: 1.5px; background: rgba(255,255,255,0.2); width: 10px; }
+    .pconn-arrow { font-size: 0.5rem; color: rgba(255,255,255,0.3); line-height: 1; }
+
+    /* Loop back arrow */
+    .loop-arrow {
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.55rem; color: var(--blue); font-weight: 700;
+      letter-spacing: 0.04em; margin-top: 2px; gap: 4px;
+    }
+    .loop-line {
+      height: 1.5px; background: var(--blue); opacity: 0.5; width: 20px;
+    }
 
     /* ── COVER ── */
     .cover-body {
@@ -253,35 +275,23 @@
       align-items: center; justify-content: center;
       text-align: center; padding: 4% 8%; background: var(--navy-dark);
     }
-    .cover-eyebrow {
-      font-family: 'Montserrat', sans-serif; font-size: 0.62rem; font-weight: 700;
-      letter-spacing: 0.2em; text-transform: uppercase; color: var(--orange); margin-bottom: 16px;
-    }
     .cover-title {
-      font-family: 'Montserrat', sans-serif; font-size: 2rem; font-weight: 800;
-      color: var(--white); line-height: 1.15; letter-spacing: -0.02em; margin-bottom: 20px;
+      font-family: 'Montserrat', sans-serif; font-size: 1.7rem; font-weight: 800;
+      color: var(--white); line-height: 1.25; letter-spacing: -0.02em; margin-bottom: 20px;
     }
     .cover-title span { color: var(--orange); }
     .cover-divider { width: 40px; height: 3px; background: var(--orange); border-radius: 2px; margin: 0 auto 20px; }
-    .cover-subtitle { font-size: 0.82rem; color: rgba(255,255,255,0.55); line-height: 1.6; max-width: 480px; }
+    .cover-subtitle { font-size: 0.82rem; color: rgba(255,255,255,0.55); line-height: 1.6; max-width: 520px; }
     .cover-meta {
       margin-top: 20px; font-family: 'Montserrat', sans-serif; font-size: 0.58rem; font-weight: 600;
       letter-spacing: 0.12em; text-transform: uppercase; color: rgba(255,255,255,0.25);
-    }
-
-    /* ── RESULTS ── */
-    .results-placeholder {
-      flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
-      border: 2px dashed var(--border); border-radius: 4px;
-      color: var(--ink-muted); font-size: 0.75rem; font-style: italic;
-      text-align: center; padding: 20px;
     }
 
     /* ── NEXT STEPS ── */
     .next-body {
       flex: 1; display: flex; flex-direction: column;
       align-items: center; justify-content: center;
-      text-align: center; padding: 3% 8%; gap: 12px;
+      text-align: center; padding: 3% 8%; gap: 14px;
       background: var(--navy-dark);
     }
     .next-tagline {
@@ -289,15 +299,12 @@
       color: var(--white); line-height: 1.15; letter-spacing: -0.02em;
     }
     .next-tagline span { color: var(--orange); }
-    .next-quote {
-      background: rgba(255,255,255,0.05); border-radius: 4px;
-      padding: 12px 20px; max-width: 560px; border-left: 4px solid var(--orange); text-align: left;
+    .next-free-quote {
+      font-size: 0.88rem; color: rgba(255,255,255,0.7); line-height: 1.6;
+      font-style: italic; max-width: 560px;
     }
-    .next-quote-label {
-      font-family: 'Montserrat', sans-serif; font-size: 0.52rem; font-weight: 700;
-      letter-spacing: 0.12em; text-transform: uppercase; color: var(--orange); margin-bottom: 6px;
-    }
-    .next-quote-text { font-size: 0.75rem; color: rgba(255,255,255,0.85); line-height: 1.6; font-style: italic; }
+    .next-free-quote span { color: var(--orange); font-style: normal; font-weight: 700; }
+    .next-cta-row { display: flex; flex-direction: column; gap: 8px; align-items: center; }
     .next-cta {
       display: inline-flex; align-items: center; gap: 8px;
       background: var(--orange); color: var(--white); text-decoration: none;
@@ -306,12 +313,14 @@
       padding: 10px 20px; border-radius: 4px; transition: background var(--transition);
     }
     .next-cta:hover { background: #c93509; }
+    .next-cta.secondary {
+      background: transparent; border: 1px solid rgba(255,255,255,0.2); color: rgba(255,255,255,0.7);
+    }
+    .next-cta.secondary:hover { border-color: var(--orange); color: var(--orange); background: transparent; }
     .next-divider { width: 32px; height: 2px; background: rgba(255,255,255,0.15); border-radius: 2px; }
     .next-contact { display: flex; flex-direction: column; align-items: center; gap: 5px; }
     .next-contact-label { font-size: 0.65rem; color: rgba(255,255,255,0.4); }
-    .next-contact-name {
-      font-family: 'Montserrat', sans-serif; font-size: 0.9rem; font-weight: 800; color: var(--white);
-    }
+    .next-contact-name { font-family: 'Montserrat', sans-serif; font-size: 0.9rem; font-weight: 800; color: var(--white); }
     .next-linkedin {
       display: inline-flex; align-items: center; gap: 6px;
       font-size: 0.68rem; color: rgba(255,255,255,0.5); text-decoration: none; font-weight: 600;
@@ -322,6 +331,7 @@
 </head>
 <body>
 
+<!-- SITE HEADER -->
 <header class="site-header">
   <div class="site-header-inner">
     <div class="logo">
@@ -335,6 +345,21 @@
       </div>
       <span class="logo-name">Strategic Radar</span>
       <span class="logo-sub">PARTTEAM & OEMKIOSKS — Case Study</span>
+      <div class="disclaimer-wrap">
+        <div class="disclaimer-trigger" onclick="toggleDisclaimer()">
+          Disclaimer <span class="disclaimer-arrow" id="disc-arrow">▾</span>
+        </div>
+        <div class="disclaimer-popup" id="disc-popup">
+          Strategic Radar uses PARTTEAM &amp; OEMKIOSKS as a case study for demonstration purposes only.
+          All information used in this project was sourced from publicly available sources. This project
+          was created as part of the Ironhack AI Consulting Bootcamp learning experience and has no
+          affiliation with or endorsement from PARTTEAM &amp; OEMKIOSKS.<br><br>
+          Strategic objectives referenced in the system are illustrative — informed by public information
+          but not representative of the company's actual strategy.<br><br>
+          For additional context on assumptions, sources, and methodology, please refer to the
+          <a href="https://github.com/marko2025pt/strategic_radar/blob/main/casestudy.md" target="_blank" style="color:inherit;text-decoration:underline;">Case Study</a> section.
+        </div>
+      </div>
     </div>
     <nav class="nav-tabs">
       <a class="nav-tab" href="/">
@@ -353,6 +378,7 @@
   </div>
 </header>
 
+<!-- CONTROLS -->
 <div class="controls">
   <button class="ctrl-btn active" onclick="goTo(0)">Cover</button>
   <button class="ctrl-btn" onclick="goTo(1)">Problem</button>
@@ -370,14 +396,13 @@
   <!-- ══ 01 COVER ══ -->
   <div class="slide active" id="slide-0">
     <div class="slide-header">
-      <div class="slide-header-title">Strategic Radar</div>
+      <div class="slide-header-title">Strategic Signals</div>
       <div class="slide-header-right">by Marco Martins — an Ironhack project</div>
     </div>
     <div class="cover-body">
-      <div class="cover-eyebrow">Strategic Intelligence · PARTTEAM & OEMKIOSKS</div>
-      <div class="cover-title">Your market doesn't wait<br>for your <span>next meeting.</span></div>
+      <div class="cover-title">"Most intelligence tools tell you what happened.<br><span>Strategic Radar tells you what it means</span> — and what to do about it."</div>
       <div class="cover-divider"></div>
-      <div class="cover-subtitle">A strategic intelligence engine built for PARTTEAM & OEMKIOSKS — autonomous, context-aware, and delivered before the week begins.</div>
+      <div class="cover-subtitle">An autonomous strategic intelligence engine that understands your context and delivers clarity before Monday morning.</div>
       <div class="cover-meta">Marco Martins &nbsp;·&nbsp; Ironhack AI Consulting &nbsp;·&nbsp; 2026</div>
     </div>
     <div class="slide-footer">
@@ -451,15 +476,16 @@
       <div class="slide-header-right">by Marco Martins — an Ironhack project</div>
     </div>
     <div class="slide-body" style="padding: 2% 5%;">
-      <div class="arch-flow" style="gap: 5px;">
-        <div class="arch-row"><div class="arch-badge" style="min-width:220px;padding:9px 16px;font-size:0.8rem;">N8N Cloud</div><div class="arch-arrow">→</div><div class="arch-desc" style="font-size:0.92rem;">Operational orchestration &amp; scheduled delivery</div></div>
-        <div class="arch-row"><div class="arch-badge" style="min-width:220px;padding:9px 16px;font-size:0.8rem;">FastAPI + Railway</div><div class="arch-arrow">→</div><div class="arch-desc" style="font-size:0.92rem;">HTTP interface, API entry point &amp; cloud deployment</div></div>
-        <div class="arch-row"><div class="arch-badge" style="min-width:220px;padding:9px 16px;font-size:0.8rem;">Custom HTML UI</div><div class="arch-arrow">→</div><div class="arch-desc" style="font-size:0.92rem;">Human-facing interface for manual runs &amp; live demos</div></div>
-        <div class="arch-row"><div class="arch-badge" style="min-width:220px;padding:9px 16px;font-size:0.8rem;">LangGraph</div><div class="arch-arrow">→</div><div class="arch-desc" style="font-size:0.92rem;">Cognitive workflow controller with conditional routing</div></div>
-        <div class="arch-row"><div class="arch-badge" style="min-width:220px;padding:9px 16px;font-size:0.8rem;">ReAct Agent</div><div class="arch-arrow">→</div><div class="arch-desc" style="font-size:0.92rem;">Signal discovery &amp; research loop across live sources</div></div>
-        <div class="arch-row"><div class="arch-badge" style="min-width:220px;padding:9px 16px;font-size:0.8rem;">Pinecone RAG</div><div class="arch-arrow">→</div><div class="arch-desc" style="font-size:0.92rem;">Strategy grounding — evaluates relevance against company objectives</div></div>
-        <div class="arch-row"><div class="arch-badge" style="min-width:220px;padding:9px 16px;font-size:0.8rem;">External APIs</div><div class="arch-arrow">→</div><div class="arch-desc" style="font-size:0.92rem;">Live data — Tavily, NewsAPI, HackerNews, TED EU Tenders</div></div>
-        <div class="arch-row"><div class="arch-badge" style="min-width:220px;padding:9px 16px;font-size:0.8rem;">OpenAI + SendGrid</div><div class="arch-arrow">→</div><div class="arch-desc" style="font-size:0.92rem;">Strategic evaluation, brief generation &amp; email delivery</div></div>
+      <div class="slide-intro" style="margin-bottom:2%;">An eight-layer intelligence pipeline — transforming raw signals into strategic insight in seconds, on demand or on schedule.</div>
+      <div class="arch-flow" style="gap: 4px;">
+        <div class="arch-row"><div class="arch-badge">N8N Cloud</div><div class="arch-arrow">→</div><div class="arch-desc">Operational orchestration &amp; scheduled delivery</div></div>
+        <div class="arch-row"><div class="arch-badge">FastAPI + Railway</div><div class="arch-arrow">→</div><div class="arch-desc">HTTP interface, API entry point &amp; cloud deployment</div></div>
+        <div class="arch-row"><div class="arch-badge">Custom HTML UI</div><div class="arch-arrow">→</div><div class="arch-desc">Human-facing interface for manual runs &amp; live demos</div></div>
+        <div class="arch-row"><div class="arch-badge">LangGraph</div><div class="arch-arrow">→</div><div class="arch-desc">Cognitive workflow controller with conditional routing</div></div>
+        <div class="arch-row"><div class="arch-badge">ReAct Agent</div><div class="arch-arrow">→</div><div class="arch-desc">Signal discovery &amp; research loop across live sources</div></div>
+        <div class="arch-row"><div class="arch-badge">Pinecone RAG</div><div class="arch-arrow">→</div><div class="arch-desc">Strategic context — company identity, objectives &amp; competitive landscape</div></div>
+        <div class="arch-row"><div class="arch-badge">External APIs</div><div class="arch-arrow">→</div><div class="arch-desc">Live data — Tavily, NewsAPI, HackerNews, TED EU Tenders</div></div>
+        <div class="arch-row"><div class="arch-badge">OpenAI + SendGrid</div><div class="arch-arrow">→</div><div class="arch-desc">Strategic evaluation, brief generation &amp; email delivery</div></div>
       </div>
     </div>
     <div class="slide-footer">
@@ -475,23 +501,23 @@
       <div class="slide-header-right">by Marco Martins — an Ironhack project</div>
     </div>
     <div class="slide-body">
-      <div class="slide-intro">Not a generic industry overview — the company's strategic identity, encoded and queryable.</div>
+      <div class="slide-intro">Not a generic industry overview — the client's strategic identity, encoded and queryable.</div>
       <div class="kb-grid">
         <div class="kb-card">
           <div class="kb-card-name">business_profile.md</div>
-          <div class="kb-card-desc">Company identity, products, verticals and revenue model. Defines who PARTTEAM is, what they sell, and which markets they serve — giving the system a grounded understanding of the business.</div>
+          <div class="kb-card-desc">Company identity, products, verticals and revenue model. Gives the system a grounded understanding of the business — who the client is, what they sell, and which markets they serve.</div>
         </div>
         <div class="kb-card">
           <div class="kb-card-name">strategic_direction.md</div>
-          <div class="kb-card-desc">6 active strategic objectives with explicit signal relevance criteria. This is the core filter: every incoming signal is measured against these objectives to determine if it warrants attention.</div>
+          <div class="kb-card-desc">Active strategic objectives with explicit signal relevance criteria. The core filter — every incoming signal is measured against these objectives to determine if it warrants attention.</div>
         </div>
         <div class="kb-card">
           <div class="kb-card-name">competitor_registry.json</div>
-          <div class="kb-card-desc">Controlled list of monitored competitors with structured metadata. Ensures research stays focused on the right players, preventing noise from irrelevant market actors.</div>
+          <div class="kb-card-desc">Controlled list of monitored competitors with structured metadata. Keeps research focused on the right players and prevents noise from irrelevant market actors.</div>
         </div>
         <div class="kb-card">
           <div class="kb-card-name">technology_watchlist.md</div>
-          <div class="kb-card-desc">Emerging technologies relevant to the DOOH and kiosk ecosystem. Keeps the system aware of disruptive trends — from AI integrations to new display standards — before they become mainstream.</div>
+          <div class="kb-card-desc">Emerging technologies relevant to the client's ecosystem. Keeps the system aware of disruptive trends before they become mainstream — enabling early positioning.</div>
         </div>
       </div>
       <div class="kb-footer">
@@ -518,14 +544,13 @@
           <div class="pipeline-row" style="width:auto;padding:8px 14px;">
             <div class="pnode">
               <div class="pnode-card orange">✅</div>
-              <div class="pnode-label">Validate</div>
-              <div class="pnode-sub">Registry check</div>
+              <div class="pnode-label">Validate<br>Request</div>
             </div>
           </div>
           <div style="font-size:0.55rem;color:var(--orange);line-height:1;">↓</div>
           <div class="cond-row">
             <div class="cond-line"></div>
-            <div class="cond-box">Conditional Edge — Route by Intelligence Type</div>
+            <div class="cond-box">Route by Intelligence Type</div>
             <div class="cond-line"></div>
           </div>
           <div style="display:flex;gap:120px;">
@@ -533,32 +558,31 @@
             <div style="font-size:0.5rem;color:var(--blue);">↓</div>
           </div>
         </div>
-
         <div class="branches-wrap">
           <div class="branch">
             <div class="branch-label orange">Competitor Moves</div>
             <div class="pipeline-row">
-              <div class="pnode"><div class="pnode-card orange">🔍</div><div class="pnode-label">Build Queries</div><div class="pnode-sub">LLM construction</div></div>
+              <div class="pnode"><div class="pnode-card orange">🔍</div><div class="pnode-label">Build<br>Queries</div></div>
               <div class="pconn"><div class="pconn-dot"></div><div class="pconn-line"></div><div class="pconn-arrow">▶</div><div class="pconn-dot"></div></div>
-              <div class="pnode"><div class="pnode-card orange">📡</div><div class="pnode-label">Collect Signals</div><div class="pnode-sub">Tavily · News · HN</div></div>
+              <div class="pnode"><div class="pnode-card orange">📡</div><div class="pnode-label">Collect<br>Signals</div></div>
               <div class="pconn"><div class="pconn-dot"></div><div class="pconn-line"></div><div class="pconn-arrow">▶</div><div class="pconn-dot"></div></div>
-              <div class="pnode"><div class="pnode-card orange">⚡</div><div class="pnode-label">Select</div><div class="pnode-sub">LLM · Top 5</div></div>
+              <div class="pnode"><div class="pnode-card orange">⚡</div><div class="pnode-label">Select<br>Signals</div></div>
               <div class="pconn"><div class="pconn-dot"></div><div class="pconn-line"></div><div class="pconn-arrow">▶</div><div class="pconn-dot"></div></div>
-              <div class="pnode"><div class="pnode-card orange">🧠</div><div class="pnode-label">Evaluate</div><div class="pnode-sub">LLM + RAG</div></div>
+              <div class="pnode"><div class="pnode-card orange">🧠</div><div class="pnode-label">Evaluate<br>Signals</div></div>
               <div class="pconn"><div class="pconn-dot"></div><div class="pconn-line"></div><div class="pconn-arrow">▶</div><div class="pconn-dot"></div></div>
-              <div class="pnode"><div class="pnode-card orange">📋</div><div class="pnode-label">Generate Brief</div><div class="pnode-sub">Snapshot</div></div>
+              <div class="pnode"><div class="pnode-card orange">📋</div><div class="pnode-label">Generate<br>Brief</div></div>
             </div>
           </div>
           <div class="branch">
             <div class="branch-label blue">Business Opportunities</div>
             <div class="pipeline-row">
-              <div class="pnode"><div class="pnode-card blue">🔍</div><div class="pnode-label">Build Queries</div><div class="pnode-sub">LLM construction</div></div>
+              <div class="pnode"><div class="pnode-card blue">🔍</div><div class="pnode-label">Build<br>Queries</div></div>
               <div class="pconn"><div class="pconn-dot"></div><div class="pconn-line"></div><div class="pconn-arrow">▶</div><div class="pconn-dot"></div></div>
-              <div class="pnode"><div class="pnode-card blue">📋</div><div class="pnode-label">Collect Opps</div><div class="pnode-sub">TED EU Tenders</div></div>
+              <div class="pnode"><div class="pnode-card blue">📋</div><div class="pnode-label">Collect<br>Opps</div></div>
               <div class="pconn"><div class="pconn-dot"></div><div class="pconn-line"></div><div class="pconn-arrow">▶</div><div class="pconn-dot"></div></div>
-              <div class="pnode"><div class="pnode-card blue">🧠</div><div class="pnode-label">Evaluate</div><div class="pnode-sub">LLM + RAG</div></div>
+              <div class="pnode"><div class="pnode-card blue">🧠</div><div class="pnode-label">Evaluate<br>Opps</div></div>
               <div class="pconn"><div class="pconn-dot"></div><div class="pconn-line"></div><div class="pconn-arrow">▶</div><div class="pconn-dot"></div></div>
-              <div class="pnode"><div class="pnode-card blue">📋</div><div class="pnode-label">Generate Brief</div><div class="pnode-sub">Opp. snapshot</div></div>
+              <div class="pnode"><div class="pnode-card blue">📋</div><div class="pnode-label">Generate<br>Brief</div></div>
             </div>
           </div>
         </div>
@@ -578,39 +602,53 @@
     </div>
     <div class="slide-body">
       <div class="slide-intro">Two delivery modes — on demand from the UI, or automatically every Monday morning.</div>
-      <div style="display:flex;flex-direction:column;gap:14px;flex:1;justify-content:center;">
+      <div style="display:flex;flex-direction:column;gap:14px;flex:1;justify-content:center;align-items:center;">
 
-        <div>
-          <div class="pipeline-row-label" style="margin-bottom:4px;">On Demand</div>
-          <div class="pipeline-row">
-            <div class="pnode"><div class="pnode-card orange">⚡</div><div class="pnode-label">Webhook Trigger</div><div class="pnode-sub">FastAPI /notify</div></div>
-            <div class="pconn"><div class="pconn-dot"></div><div class="pconn-line"></div><div class="pconn-arrow">▶</div><div class="pconn-dot"></div></div>
-            <div class="pnode"><div class="pnode-card orange">{}</div><div class="pnode-label">Format Brief</div><div class="pnode-sub">HTML builder</div></div>
-            <div class="pconn"><div class="pconn-dot"></div><div class="pconn-line"></div><div class="pconn-arrow">▶</div><div class="pconn-dot"></div></div>
-            <div class="pnode"><div class="pnode-card orange">✉️</div><div class="pnode-label">Send Email</div><div class="pnode-sub">SendGrid</div></div>
-            <div class="pconn"><div class="pconn-dot"></div><div class="pconn-line"></div><div class="pconn-arrow">▶</div><div class="pconn-dot"></div></div>
-            <div class="pnode"><div class="pnode-card green">✅</div><div class="pnode-label">Respond OK</div><div class="pnode-sub">200 status</div></div>
+        <div style="width:100%;">
+          <div style="background:var(--navy-dark);border:1px solid rgba(255,255,255,0.08);border-radius:6px;overflow:hidden;">
+            <div style="padding:6px 12px;border-bottom:1px solid rgba(255,255,255,0.08);">
+              <div class="pipeline-row-label" style="color:var(--orange);">On-demand Delivery</div>
+            </div>
+            <div style="padding:8px 10px;display:flex;align-items:center;justify-content:center;">
+              <div class="pnode"><div class="pnode-card orange">⚡</div><div class="pnode-label">Webhook<br>Trigger</div></div>
+              <div class="pconn"><div class="pconn-dot"></div><div class="pconn-line"></div><div class="pconn-arrow">▶</div><div class="pconn-dot"></div></div>
+              <div class="pnode"><div class="pnode-card orange">{}</div><div class="pnode-label">Format<br>Brief</div></div>
+              <div class="pconn"><div class="pconn-dot"></div><div class="pconn-line"></div><div class="pconn-arrow">▶</div><div class="pconn-dot"></div></div>
+              <div class="pnode"><div class="pnode-card orange">✉️</div><div class="pnode-label">Send<br>Email</div></div>
+              <div class="pconn"><div class="pconn-dot"></div><div class="pconn-line"></div><div class="pconn-arrow">▶</div><div class="pconn-dot"></div></div>
+              <div class="pnode"><div class="pnode-card green">✅</div><div class="pnode-label">Respond<br>OK</div></div>
+            </div>
           </div>
         </div>
 
-        <div>
-          <div class="pipeline-row-label" style="margin-bottom:4px;">Scheduled — Every Monday 8am</div>
-          <div class="pipeline-row">
-            <div class="pnode"><div class="pnode-card blue">🕗</div><div class="pnode-label">Every Mon 8am</div><div class="pnode-sub">Cron trigger</div></div>
-            <div class="pconn"><div class="pconn-dot"></div><div class="pconn-line"></div><div class="pconn-arrow">▶</div><div class="pconn-dot"></div></div>
-            <div class="pnode"><div class="pnode-card blue">✏️</div><div class="pnode-label">Set Competitors</div><div class="pnode-sub">6 companies</div></div>
-            <div class="pconn"><div class="pconn-dot"></div><div class="pconn-line"></div><div class="pconn-arrow">▶</div><div class="pconn-dot"></div></div>
-            <div class="pnode"><div class="pnode-card blue">🔄</div><div class="pnode-label">Loop Competitors</div><div class="pnode-sub">done / loop</div></div>
-            <div class="pconn"><div class="pconn-dot"></div><div class="pconn-line"></div><div class="pconn-arrow">▶</div><div class="pconn-dot"></div></div>
-            <div class="pnode"><div class="pnode-card blue">🌐</div><div class="pnode-label">Run Competitor</div><div class="pnode-sub">FastAPI /run</div></div>
-            <div class="pconn"><div class="pconn-dot"></div><div class="pconn-line"></div><div class="pconn-arrow">▶</div><div class="pconn-dot"></div></div>
-            <div class="pnode"><div class="pnode-card blue">🔄</div><div class="pnode-label">Loop Sectors</div><div class="pnode-sub">5 sectors</div></div>
-            <div class="pconn"><div class="pconn-dot"></div><div class="pconn-line"></div><div class="pconn-arrow">▶</div><div class="pconn-dot"></div></div>
-            <div class="pnode"><div class="pnode-card blue">🌐</div><div class="pnode-label">Run Sector</div><div class="pnode-sub">FastAPI /run</div></div>
-            <div class="pconn"><div class="pconn-dot"></div><div class="pconn-line"></div><div class="pconn-arrow">▶</div><div class="pconn-dot"></div></div>
-            <div class="pnode"><div class="pnode-card blue">{}</div><div class="pnode-label">Build Email</div><div class="pnode-sub">Combined brief</div></div>
-            <div class="pconn"><div class="pconn-dot"></div><div class="pconn-line"></div><div class="pconn-arrow">▶</div><div class="pconn-dot"></div></div>
-            <div class="pnode"><div class="pnode-card blue">✉️</div><div class="pnode-label">Send SendGrid</div><div class="pnode-sub">Leadership inbox</div></div>
+        <div style="width:100%;">
+          <div style="background:var(--navy-dark);border:1px solid rgba(255,255,255,0.08);border-radius:6px;overflow:hidden;">
+            <div style="padding:6px 12px;border-bottom:1px solid rgba(255,255,255,0.08);">
+              <div class="pipeline-row-label" style="color:var(--orange);">Scheduled Delivery — Every Monday 8am</div>
+            </div>
+            <div style="padding:8px 10px;display:flex;align-items:center;justify-content:center;flex-wrap:nowrap;">
+              <div class="pnode"><div class="pnode-card blue">🕗</div><div class="pnode-label">Cron<br>Trigger</div></div>
+              <div class="pconn"><div class="pconn-dot"></div><div class="pconn-line"></div><div class="pconn-arrow">▶</div><div class="pconn-dot"></div></div>
+              <div class="pnode"><div class="pnode-card blue">✏️</div><div class="pnode-label">Set<br>Competitors</div></div>
+              <div class="pconn"><div class="pconn-dot"></div><div class="pconn-line"></div><div class="pconn-arrow">▶</div><div class="pconn-dot"></div></div>
+              <div class="pnode">
+                <div class="pnode-card blue">🌐</div>
+                <div class="pnode-label">Run<br>Competitor</div>
+                <div class="loop-arrow" style="color:var(--orange);">↩ loop</div>
+              </div>
+              <div class="pconn"><div class="pconn-dot"></div><div class="pconn-line"></div><div class="pconn-arrow">▶</div><div class="pconn-dot"></div></div>
+              <div class="pnode"><div class="pnode-card blue">✏️</div><div class="pnode-label">Set<br>Opportunities</div></div>
+              <div class="pconn"><div class="pconn-dot"></div><div class="pconn-line"></div><div class="pconn-arrow">▶</div><div class="pconn-dot"></div></div>
+              <div class="pnode">
+                <div class="pnode-card blue">🌐</div>
+                <div class="pnode-label">Run<br>Opportunities</div>
+                <div class="loop-arrow">↩ loop</div>
+              </div>
+              <div class="pconn"><div class="pconn-dot"></div><div class="pconn-line"></div><div class="pconn-arrow">▶</div><div class="pconn-dot"></div></div>
+              <div class="pnode"><div class="pnode-card blue">{}</div><div class="pnode-label">Build<br>Email</div></div>
+              <div class="pconn"><div class="pconn-dot"></div><div class="pconn-line"></div><div class="pconn-arrow">▶</div><div class="pconn-dot"></div></div>
+              <div class="pnode"><div class="pnode-card blue">✉️</div><div class="pnode-label">Send<br>Brief</div></div>
+            </div>
           </div>
         </div>
 
@@ -625,19 +663,26 @@
   <!-- ══ 08 RESULTS ══ -->
   <div class="slide" id="slide-7">
     <div class="slide-header">
-      <div class="slide-header-title">Results — Briefs aligned with your business strategy</div>
+      <div class="slide-header-title">Results</div>
       <div class="slide-header-right">by Marco Martins — an Ironhack project</div>
     </div>
     <div class="slide-body" style="padding: 2.5% 5%; background: #f4f6fb;">
-      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:2%;">
+      <div class="slide-intro" style="margin-bottom:1.5%;">Briefs aligned with your business strategy — ranked by impact, with a recommended action.</div>
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1.5%;">
         <div style="font-family:'Montserrat',sans-serif; font-size:0.9rem; font-weight:800; color:var(--ink);">QSR and Food Service — Business Opportunities</div>
         <div style="font-family:'Montserrat',sans-serif; font-size:0.55rem; color:var(--ink-muted); font-weight:600;">06 Mar 2026, 13:36</div>
       </div>
-      <div style="background:var(--navy-dark); border-radius:6px; padding:4% 5%; border-left:4px solid var(--orange); flex:1; display:flex; flex-direction:column; gap:10px;">
+      <div style="background:var(--navy-dark); border-radius:6px; padding:3% 4%; border-left:4px solid var(--orange); display:flex; flex-direction:column; gap:10px;">
         <div style="font-family:'Montserrat',sans-serif; font-size:0.55rem; font-weight:800; letter-spacing:0.14em; text-transform:uppercase; color:var(--orange);">Executive Takeaway</div>
-        <div style="font-size:0.82rem; color:rgba(255,255,255,0.88); line-height:1.7;">
-          The biggest opportunity this week lies in McDonald's aggressive global expansion plans, which present a significant chance for PARTTEAM to supply self-ordering kiosks and digital signage solutions. Leadership should prioritize establishing connections with McDonald's regional procurement and technology teams to position PARTTEAM as a key supplier in their expansion strategy. This proactive engagement could secure a substantial market share in the QSR and Food Service sector, aligning with our strategic growth objectives.
+        <div style="font-size:0.78rem; color:rgba(255,255,255,0.88); line-height:1.65;">
+          The biggest opportunity this week lies in McDonald's aggressive global expansion plans, which present a significant chance to supply self-ordering kiosks and digital signage solutions. Leadership should prioritize establishing connections with McDonald's regional procurement and technology teams. This proactive engagement could secure a substantial market share in the QSR and Food Service sector, aligning with strategic growth objectives.
         </div>
+      </div>
+      <div style="margin-top:2%;text-align:center;">
+        <a href="/tool" target="_blank" style="display:inline-flex;align-items:center;gap:8px;background:var(--orange);color:white;text-decoration:none;font-family:'Montserrat',sans-serif;font-size:0.65rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;padding:9px 20px;border-radius:4px;">
+          <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><polygon points="3,2 13,8 3,14" fill="currentColor"/></svg>
+          Experiment the Tool
+        </a>
       </div>
     </div>
     <div class="slide-footer">
@@ -654,14 +699,20 @@
     </div>
     <div class="next-body">
       <div class="next-tagline">The roadmap is <span>already written.</span></div>
-      <div class="next-quote">
-        <div class="next-quote-label">The one thing to remember</div>
-        <div class="next-quote-text">"Most intelligence tools tell you what happened. Strategic Radar tells you what it means — and what to do about it."</div>
+      <div class="next-free-quote">
+        "Most intelligence tools tell you what happened.<br>
+        <span>Strategic Radar tells you what it means</span> — and what to do about it."
       </div>
-      <a class="next-cta" href="https://github.com/YOUR_USERNAME/YOUR_REPO/blob/main/product_backlog.md" target="_blank">
-        <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z" fill="currentColor"/></svg>
-        Read the Full Product Backlog →
-      </a>
+      <div class="next-cta-row">
+        <a class="next-cta" href="https://github.com/marko2025pt/strategic_radar/blob/main/product_roadmap.md" target="_blank">
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z" fill="currentColor"/></svg>
+          Read the Product Roadmap →
+        </a>
+        <a class="next-cta secondary" href="https://github.com/marko2025pt/strategic_radar/blob/main/casestudy.md" target="_blank">
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="12" height="12" rx="1" stroke="currentColor" stroke-width="1.5" fill="none"/><line x1="5" y1="6" x2="11" y2="6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="5" y1="9" x2="9" y2="9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          Read the Case Study →
+        </a>
+      </div>
       <div class="next-divider"></div>
       <div class="next-contact">
         <div class="next-contact-label">Interested in what comes next?</div>
@@ -707,6 +758,19 @@
   document.addEventListener('keydown', e => {
     if (e.key === 'ArrowRight') navigate(1);
     if (e.key === 'ArrowLeft') navigate(-1);
+  });
+  function toggleDisclaimer() {
+    const popup = document.getElementById('disc-popup');
+    const arrow = document.getElementById('disc-arrow');
+    popup.classList.toggle('open');
+    arrow.classList.toggle('open');
+  }
+  document.addEventListener('click', function(e) {
+    const wrap = document.querySelector('.disclaimer-wrap');
+    if (wrap && !wrap.contains(e.target)) {
+      document.getElementById('disc-popup').classList.remove('open');
+      document.getElementById('disc-arrow').classList.remove('open');
+    }
   });
 </script>
 </body>

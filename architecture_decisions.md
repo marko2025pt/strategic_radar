@@ -1,3 +1,4 @@
+[//]: # (Version 1.1 — Final demo delivery to Ironhack 2026-03-06)
 # Strategic Radar - Autonomous Strategic Intelligence Snapshot Engine
 # Architecture Decisions
 
@@ -66,15 +67,14 @@ Use Pinecone to store generic industry documents — DOOH market reports, compet
 Generic industry knowledge makes the agent slightly better informed but does not make it strategically useful. An agent that knows "the DOOH market is worth $X billion" is not more valuable than one that knows "this signal directly threatens our airport expansion objective." The difference is anchoring.
 
 **New Solution:**
-The RAG knowledge base contains only three types of documents:
+The RAG knowledge base contains four types of documents:
 
 1. **Business Profile** — who we are, what we build, where we operate, how we compete
 2. **Strategic Direction** — 5-8 active objectives that define where we want to go
 3. **Competitor Registry** — controlled list of monitored competitors
-
-In V1.2, a fourth document is added:
-
 4. **Technology Watchlist** — emerging technologies relevant to DOOH and kiosk ecosystem
+
+All four documents are ingested from the start (24 chunks total in Pinecone). The technology watchlist is used in V1.0 evaluation context and is the foundation for the V1.2 Technology Developments branch.
 
 **Why This Provides More Business Value:**
 RAG is no longer general context. It is strategic interpretation memory. Every signal is evaluated against real objectives, not abstract industry knowledge. The system knows not just what happened, but whether it matters to this specific company. That is the difference between information and intelligence.
@@ -105,11 +105,13 @@ Open-ended input introduces noise, ambiguity, and reliability issues. A query fo
 **New Solution:**
 A predefined competitor registry stored in the knowledge base. The UI presents a dropdown, not a text field. Input validation checks the registry before any API call is made.
 
+The same principle was extended to V1.1: the Business Opportunities branch uses a controlled list of valid sectors (`VALID_SECTORS` in `nodes.py`) rather than accepting free text. Validation checks the sector name before any collection begins.
+
 **Why This Provides More Business Value:**
 - Eliminates noise and ambiguity
-- Forces intentional competitor selection
+- Forces intentional competitor and sector selection
 - Makes the system more reliable and predictable
-- Registry is easy to extend — adding a new competitor is a one-line change
+- Registry and sector list are easy to extend — adding a new competitor or sector is a one-line change
 
 ---
 
@@ -168,6 +170,14 @@ Gradio was the original plan. It was replaced with a custom HTML/CSS/JS single-p
 - Live step-by-step progress animation not achievable in Gradio
 - Cascading dropdowns for intelligence type → second input not supported in Gradio
 - Same deployment complexity — one file, no additional dependencies
+
+**V1.1 Extension:**
+The UI was extended to a three-page structure served from `api/static/`:
+- `index.html` — Overview landing page (served at `/`)
+- `tool.html` — Intelligence tool UI (served at `/tool`, with `/ui` as alias)
+- `slides.html` — Presentation slides (served at `/slides`)
+
+All three are static HTML files served directly by FastAPI. No additional build tooling or dependencies.
 
 ---
 
@@ -336,6 +346,7 @@ Each tool is a Python function decorated with `@mcp.tool()`. The decorator provi
 - `tavily.py` — web search, primary signal discovery
 - `newsapi.py` — news articles, secondary signal discovery
 - `hackernews.py` — technology signals via Algolia HN Search API, no API key required
+- `ted.py` — EU public tenders via TED Open Data API, no API key required (V1.1)
 
 **Trade-off:**
 Tools are not exposed as remote MCP endpoints that other agents or clients could call. This is acceptable for MVP — the MCP pattern is correctly implemented and demonstrable. Remote exposure is a post-MVP enhancement.
@@ -465,34 +476,35 @@ Adds a network hop between FastAPI and N8N. Acceptable — the UI has already re
 
 ---
 
-## Decision 16 — Multilingual TED Data: Translate Inside Evaluation, Not at Tool Level
+## Decision 17 — Multilingual TED Data: Translate Inside Evaluation, Not at Tool Level
 
 **Context:**
 The TED EU Open Data API returns procurement notices in the official language
 of the contracting authority. A Portuguese tender arrives in Portuguese, a
 French one in French, a Polish one in Polish. The UI, the brief, and all
 downstream output must be in English.
-Options Considered:
+
+**Options Considered:**
 
 **Translate in ted.py (_parse_notice)** — call the LLM inside the
-tool to translate each raw tender before returning it
+tool to translate each raw tender before returning it.
 
 **Add a dedicated translate_tenders node** — a separate LangGraph node
-that translates raw_tenders before evaluation
+that translates raw_tenders before evaluation.
 
 **Translate inside evaluate_opportunities** — add a language instruction
 to the existing system prompt; translation happens as part of the same
-LLM call that evaluates the tender
+LLM call that evaluates the tender.
 
-**Why We Rejected Option 1 — Tool Layer**:
+**Why We Rejected Option 1 — Tool Layer:**
 Tools are data fetchers, not reasoners. A tool that makes an LLM call
 violates single responsibility — it conflates retrieval with transformation.
 It would also translate every raw tender returned by the API, including
-tenders that never survive the evaluation budget cap (max 4 tenders
+tenders that never survive the evaluation budget cap (max 3 tenders
 evaluated per run). Translation cost would be paid on data that is
 immediately discarded. Principle: tools fetch, agents reason.
 
-**Why We Rejected Option 2 — Dedicated Node**:
+**Why We Rejected Option 2 — Dedicated Node:**
 A translate node would be correct in architecture but wasteful in practice.
 It would still translate all raw tenders before knowing which ones fit the
 LLM budget cap inside evaluate_opportunities. Translation and evaluation
@@ -500,55 +512,194 @@ are semantically inseparable — you cannot assess fit without understanding
 the text. Splitting them into two nodes adds a node, adds LLM calls, and
 produces no benefit over Option 3.
 
-**Why We Chose Option 3 — Translate Inside Evaluation**:
+**Why We Chose Option 3 — Translate Inside Evaluation:**
+- Zero extra LLM calls — translation is absorbed into the evaluation call that was already happening for every item
+- Zero wasted translations — only tenders that are actually being evaluated get translated
+- Semantically correct — understanding foreign text and assessing its strategic fit are the same cognitive act; they belong in the same prompt
+- Implementation is a single instruction added to the `tender_system` prompt: *"If the tender title is not in English, translate it to English for the translated_title field."*
+- GPT-4o is highly reliable at multilingual understanding and produces accurate English output from EU procurement language (PT, FR, DE, PL, etc.)
 
-Zero extra LLM calls — translation is absorbed into the evaluation call
-that was already happening for every item
+**What This Means in Practice:**
+`ted.py` remains a pure data fetcher — no LLM calls, no language awareness.
+`evaluate_opportunities` receives raw tender text in any language and
+produces English evaluation fields (`bid_fit_summary`, `strategic_link`,
+`recommended_action`) as normal. The LLM also returns a `translated_title`
+field, which `_evaluate_item` uses to overwrite the original title so the
+brief and UI always display English titles.
 
-Zero wasted translations — only tenders that are actually being evaluated
-get translated, because the instruction lives inside _evaluate_item()
-
-Semantically correct — understanding foreign text and assessing its
-strategic fit are the same cognitive act; they belong in the same prompt
-Implementation is a single paragraph added to the evaluate_opportunities
-system prompt: "the input may be in any language. Translate any
-non-English text as part of your reasoning. All output fields must be
-written in English, regardless of the language of the input."
-GPT-4o is highly reliable at multilingual understanding and produces
-accurate English output from EU procurement language (PT, FR, DE, PL, etc.)
-
-**What This Means in Practice**:
-ted.py remains a pure data fetcher — no LLM calls, no language awareness.
-evaluate_opportunities receives raw tender text in any language and
-produces English evaluation fields (bid_fit_summary, strategic_link,
-recommended_action) as normal. The UI, brief, and export always receive
-English output with no additional processing.
-
-**Trade-off Accepted**:
+**Trade-off:**
 Translation is implicit rather than explicit — it is an instruction inside
 a prompt, not a verifiable transformation step. For a production system
-processing **high-stakes legal tender documents**, an explicit translation step
+processing high-stakes legal tender documents, an explicit translation step
 with validation would be preferable. For this system, where the LLM output
 is advisory and always reviewed by a human before action, implicit
 translation inside evaluation is the right balance between correctness,
 efficiency, and architectural simplicity.
-Principle Reinforced:
 
-Tools fetch. Agents reason. Transformation that requires intelligence
-belongs in the agent layer, and only at the moment it is needed.
+**Principle reinforced:** Tools fetch. Agents reason. Transformation that
+requires intelligence belongs in the agent layer, and only at the moment
+it is needed.
 
+---
+
+## Decision 18 — V1.1 Business Opportunities: Three-Type Signal Taxonomy
+
+**Context:**
+The Business Opportunities branch must surface different types of opportunity
+signals, each with a different urgency, buyer type, and recommended action.
+A single "opportunities" category would conflate signals that require very
+different responses.
+
+**Decision:**
+Define three distinct signal types collected and evaluated separately:
+
+1. **EU Public Tenders** — live procurement notices from the TED Open Data API.
+   The tender is published. There is a deadline. The action is: bid or no-bid now.
+
+2. **Private Expansion Signals** — a private company (restaurant chain, retailer,
+   airport operator) announcing expansion, renovation, or rollout where they would
+   buy kiosks or digital signage directly. The buyer is identifiable. The action is:
+   contact the buyer now.
+
+3. **Pre-Tender Signals** — a public sector body (city council, government,
+   NHS, EU institution) announcing a budget approval, investment plan, or strategy
+   document that will likely result in a public tender in 3–12 months. Not on TED yet.
+   The action is: monitor and position now, before competitors are aware.
+
+**Classification Mechanism:**
+After the ReAct agent collects raw signals from Tavily, NewsAPI, and HackerNews,
+a dedicated LLM classification call sorts them into "private_expansion" or
+"pretender_signal". This is a single LLM call on the full batch — it does not
+evaluate each signal individually, it only classifies type. The subsequent
+`evaluate_opportunities` node then applies a different evaluation prompt
+to each type, producing type-appropriate output fields.
+
+**Why Three Types Instead of One:**
+- The recommended action differs fundamentally: bid now vs call a buyer now vs position for future
+- The urgency metric differs: tender deadline vs commercial window vs 3-12 month horizon
+- Conflating them would force a single evaluation prompt to handle three different strategic frames, producing weaker output for all three
+- Separating types allows the UI to render type-appropriate cards with the right fields visible
+
+**Trade-off:**
+The classification LLM call adds one call to the V1.1 collection phase.
+This is acceptable — it is a lightweight batch classification (one call on a
+list), not a per-signal evaluation. The alternative — inferring type inside
+the evaluation prompt — would require more complex prompts and would still
+need downstream branching on type to produce the right output fields.
+
+---
+
+## Decision 19 — V1.1 Hybrid Collection: Deterministic TED + ReAct for Private Signals
+
+**Context:**
+The Business Opportunities branch must collect signals from two fundamentally
+different source types: a structured API (TED EU) and the open web
+(Tavily, NewsAPI, HackerNews). These require different collection strategies.
+
+**Decision:**
+Use a hybrid collection approach within the `collect_opportunities` node:
+
+- **TED EU API** — called **directly and deterministically**. The API is structured,
+  reliable, and parameterised (CPV code, keyword, country, publication date).
+  No reasoning is needed to decide what to query — the parameters are derived
+  mechanically from the sector and time window. No ReAct loop. One function call.
+
+- **Private and pre-tender signals** — collected via a **ReAct loop** over Tavily,
+  NewsAPI, and HackerNews. The web is unstructured. Signals are phrased differently
+  across sources. The agent must reason about what to search for, observe results,
+  and iterate — the same pattern used in V1.0 for competitor moves.
+
+**Why Not ReAct for TED:**
+ReAct adds value when the agent must decide what to do next based on intermediate
+results. For TED, the query parameters are deterministic — there is no benefit
+in having the agent reason about them. Adding a ReAct loop around a structured
+API call would increase latency and LLM cost with no improvement in result quality.
+Principle: use ReAct only where reasoning adds value over a direct call.
+
+**Why Not Direct Calls for Private Signals:**
+Private expansion signals and pre-tender indicators are dispersed across the open
+web in unpredictable forms — press releases, trade press, council meeting minutes,
+EU fund announcements. A fixed set of queries would miss signals that require
+adaptive search. The ReAct agent is the right tool here: it can observe what
+one query returns and adjust the next query accordingly.
+
+**Implementation:**
+`collect_opportunities` executes TED first (deterministic, no LLM), then
+launches the ReAct agent for web signals. The results are combined in the
+same state fields and passed to `evaluate_opportunities` as three separate
+lists: `raw_tenders`, `raw_private_signals`, `raw_pretender_signals`.
+
+**Trade-off:**
+The hybrid approach requires two collection mechanisms in a single node.
+This adds some complexity but is contained within `collect_opportunities`.
+The alternative — a single ReAct loop that also calls TED — would give the
+agent the ability to decide when or whether to call TED, introducing
+non-determinism where none is needed.
+
+---
+
+## Decision 20 — Confidence Formula: Adding LLM Self-Assessment as Primary Weight
+
+**Context:**
+V1.0 calculated signal confidence using only two factors:
+`(rag_score * 0.6) + (source_quality * 0.4)`
+
+This formula had a structural weakness: it relied entirely on vector similarity
+(how close the signal is to KB content) and source metadata (primary vs secondary
+domain), with no input from the LLM's own assessment of strategic relevance.
+A signal could score high confidence because it happened to match KB vocabulary,
+even if the LLM evaluated it as strategically unimportant.
+
+**Decision:**
+Replace the V1.0 formula with a three-factor formula:
+
+```
+confidence = (llm_score * 0.5) + (rag_score * 0.3) + (source_quality * 0.2)
+```
+
+Where:
+- `llm_score` — the LLM's own 1–10 relevance assessment, normalised to 0–1.
+  Returned as `relevance_score` in the evaluation JSON. Added to V1.0 and V1.1 evaluation prompts.
+- `rag_score` — top Pinecone cosine similarity score from the retrieval call for this signal.
+  Measures how closely the signal matches the KB's strategic context.
+- `source_quality` — domain classification score: primary=1.0, secondary=0.6, unknown=0.3.
+  Measures source reliability, not strategic relevance.
+
+**Why LLM Score Gets the Highest Weight (0.5):**
+The LLM has read the full signal, the full RAG context, and applied strategic reasoning.
+Its relevance assessment is the most informed judgment in the pipeline — it should
+carry the most weight. RAG score is a proxy for relevance (similar vocabulary ≠ strategic
+importance). Source quality is a proxy for reliability, not relevance at all.
+
+**Why RAG Score Drops from 0.6 to 0.3:**
+In V1.0, RAG score was the dominant factor. A signal about a competitor's product launch
+in an unrelated vertical could score high if it matched KB vocabulary. Reducing its
+weight corrects this — RAG score becomes a corroborating signal, not the primary judge.
+
+**Why Source Quality Drops from 0.4 to 0.2:**
+Source quality was over-weighted relative to its actual contribution to strategic value.
+A story from a secondary source can be highly relevant. A story from a primary source
+can be noise. Reducing its weight to 0.2 makes it a tie-breaker, not a primary driver.
+
+**Trade-off:**
+The formula now depends on `relevance_score` being returned correctly by the LLM.
+If the LLM fails to return this field, the code defaults to 5 (mid-range), which
+produces a neutral result rather than a crash. The formula is applied identically
+in `evaluate_signals` (V1.0) and `evaluate_opportunities` (V1.1).
+
+---
 
 ## Trade-offs Summary
 
 | Trade-off | Decision | Rationale |
 |---|---|---|
 | Reliability over maximal autonomy | Bounded loops, max 7 LLM calls | Predictable, fast, cost-controlled |
-| Depth over breadth | One competitor per run | Better signal quality, less noise |
+| Depth over breadth | One competitor or sector per run | Better signal quality, less noise |
 | Actionability over completeness | 1-page snapshot over full report | Executive time is scarce |
-| Controlled input over flexibility | Competitor registry + dropdown | Reliability and intentionality |
+| Controlled input over flexibility | Competitor registry + sector list + dropdowns | Reliability and intentionality |
 | Working MVP over feature density | Layered V1.0 → V1.1 → V1.2 | Always have something to ship |
 | Cloud deployment over local script | FastAPI + Railway | Real product, not just a demo |
-| Custom HTML over Gradio | Single-page HTML UI | Professional appearance, full control |
+| Custom HTML over Gradio | Three-page HTML UI | Professional appearance, full control |
 | Single source of truth over format purity | Competitor registry as JSON, reconstructed as text for RAG | Application logic and RAG ingestion served from one file |
 | Semantic chunking over token-based chunking | Chunk by ## heading, fatten thin chunks | Retrieval precision over implementation simplicity |
 | In-process MCP over separate MCP servers | @mcp.tool() decorator, same Railway process | Zero deployment risk over full MCP remote exposure |
@@ -558,6 +709,10 @@ belongs in the agent layer, and only at the moment it is needed.
 | HTML email over PDF | No PDF generation dependency | Lighter, clickable, mobile-friendly |
 | Outlook sender over Gmail sender | strategicradar2026@outlook.com verified in SendGrid | No DMARC restrictions, clean delivery |
 | Two N8N workflows over one | On-demand + Scheduled are separate concerns | Simpler logic, easier to debug and maintain |
+| Implicit translation over explicit translation step | Translate inside evaluation prompt | Zero extra LLM calls, zero wasted translations |
+| Three-type signal taxonomy over single category | Tenders + private + pre-tender classified separately | Different urgency, buyer, and action per type |
+| Deterministic TED over ReAct for structured API | Direct call, no agent loop | No reasoning needed where parameters are deterministic |
+| LLM self-assessment as primary confidence weight | (llm_score * 0.5) + (rag_score * 0.3) + (source_quality * 0.2) | Most informed judgment in pipeline gets highest weight |
 
 ---
 
@@ -571,5 +726,6 @@ This architecture prioritises:
 - **Layered delivery** — working product at every stage of development
 - **Observability** — every decision logged, every transition traceable
 - **Extensibility** — new intelligence types added as branches, not rewrites
+- **Principle enforcement** — tools fetch, agents reason, transformation belongs in the agent layer
 
-The system is designed not as a demo agent, but as a reference architecture for reliable, strategically-grounded autonomous intelligence workflows.
+The system is designed not as a demo agent, but as a reference architecture for reliable, strategically-grounded autonomous intelligence workflows. V1.0 delivers competitor intelligence. V1.1 extends to business opportunities with a hybrid collection strategy and three-type signal taxonomy. V1.2 is the next extension point for technology developments, with the knowledge base already prepared.
